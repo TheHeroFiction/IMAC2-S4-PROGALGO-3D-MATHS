@@ -3,7 +3,7 @@
 (X) tâches complétées
 
 ( ) Les pièces sont représentées par un bouton de leur couleur (blanc ou noir), avec une lettre les représentant (P pour Pion, etc.)
-( ) Les cases vides sont soit claires soit sombres, en fonction d'un pattern d'échiquier. La case en bas à gauche est une case sombre.
+(X) Les cases vides sont soit claires soit sombres, en fonction d'un pattern d'échiquier. La case en bas à gauche est une case sombre.
 ( ) Le plateau commence avec les pièces disposées ainsi, les blancs toujours en bas
 ( ) Chaque joueur joue tour à tour. On ne peut pas déplacer deux pièces d'une même couleur d'affilée.
 ( ) Ce sont toujours les blancs qui commencent la partie
