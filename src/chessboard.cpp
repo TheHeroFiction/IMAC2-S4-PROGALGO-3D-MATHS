@@ -1,6 +1,10 @@
 #include "chessboard.hpp"
 #include <imgui.h>
 #include <iostream>
+#include <map>
+#include <string>
+
+std::map<std::string, ImVec2> casePositions;
 
 void draw_board(float caseSize)
 {
@@ -23,11 +27,16 @@ void draw_board(float caseSize)
 
             if (ImGui::Button(" ", ImVec2(caseSize, caseSize)))
             {
+                // Position
                 char file = static_cast<char>('a' + col);
 
                 int rank = 8 - row;
 
-                std::cout << "Case cliquée : " << file << rank << "\n";
+                std::string caseName = std::string(1, file) + std::to_string(rank);
+            
+                casePositions[caseName] = ImGui::GetCursorPos();
+
+                std::cout << "Case cliquée : " << caseName << "\n";
             }
 
             ImGui::PopStyleColor();
