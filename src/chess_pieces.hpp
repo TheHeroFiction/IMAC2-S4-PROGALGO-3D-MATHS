@@ -1,5 +1,6 @@
 #pragma once
 #include <imgui.h>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -9,11 +10,12 @@ private:
     bool        m_is_white;
     bool        m_is_playable;
     std::string m_current_case;
+    ImVec2      m_position;
 
 public:
     // constructor
     Piece();
-    Piece(Piece* piece);
+    Piece(Piece const& piece) = default;
     Piece(std::string name, bool is_white);
 
     // destructor
@@ -23,13 +25,17 @@ public:
     void set_name(std::string name);
     void set_color(bool is_white);
     void set_current_case(std::string next_case);
+    void set_position(ImVec2 new_pos);
 
     // gettters
     std::string get_name();
     std::string get_current_case();
+    ImVec2      get_position();
 
     // others
     void show_piece();
 };
 
 std::vector<Piece> pieces_gen_v2();
+
+void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos);
