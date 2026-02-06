@@ -27,13 +27,14 @@ public:
     void set_current_case(std::string next_case);
     void set_position(ImVec2 new_pos);
 
-    // gettters
+    // getters
     std::string get_name();
     std::string get_current_case();
     ImVec2      get_position();
+    bool is_white() const;
 
     // others
-    void show_piece();
+    bool show_piece();
 };
 
 std::vector<Piece> pieces_gen_v2();

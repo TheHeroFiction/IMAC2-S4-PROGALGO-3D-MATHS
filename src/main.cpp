@@ -6,6 +6,8 @@
 #include "chess_pieces.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 #include "utils.hpp"
+#include "game_state.hpp"
+#include "logger.hpp"
 
 std::vector<Piece> pieces{pieces_gen_v2()};
 
@@ -20,11 +22,16 @@ int main()
 
     for (int i{0}; i < 32; i++)
     {
-        std::cout << pieces[i].get_name() << pieces[i].get_current_case() << std::endl;
+        std::cout << pieces[i].get_name() << pieces[i].get_current_case() << '\n';
     }
 
-    std::cout << "test: " << pieces[1].get_current_case() << std::endl;
+    std::cout << "test: " << pieces[1].get_current_case() << '\n';
 
+    GameState game_state;
+    GameLogger logger;
+
+    logger.AddLog("C'est parti !");
+    
     quick_imgui::loop(
         "Chess",
         {
@@ -57,20 +64,60 @@ int main()
 
                     // ImGui::PopStyleColor();
 
-                    ImGui::Begin("Chessboard");
-                    draw_board(TILE_SIZE);
+                    ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-                    ImGui::SetCursorPos(ImVec2(8, 25));
-
-                    ImGui::BeginChild("Pieces", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8));
-
-                    for (int i{0}; i < pieces.size(); i++)
-                    {
-                        ImGui::SetCursorPos(pieces[i].get_position());
-                        pieces[i].show_piece();
+                    // --- Header ---
+                    ImGui::Text("Tour actuel : ");
+                    ImGui::SameLine();
+                    if (game_state.is_white_turn) {
+                        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Blancs");
+                        ImGui::SameLine();
+                        ImGui::ColorButton("TurnW", ImVec4(1,1,1,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15,15));
+                    } else {
+                        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Noirs");
+                        ImGui::SameLine();
+                        ImGui::ColorButton("TurnB", ImVec4(0,0,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15,15));
                     }
 
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    // --- Le Plateau et les Pièces ---
+                    ImVec2 boardStartPos = ImGui::GetCursorScreenPos(); 
+
+                    draw_board(TILE_SIZE); 
+
+                    ImGui::SetCursorScreenPos(boardStartPos);
+
+                    ImGui::BeginChild("PiecesLayer", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false, ImGuiWindowFlags_NoBackground);
+                    {
+                        for (int i{0}; i < pieces.size(); i++)
+                        {
+                            ImGui::SetCursorPos(pieces[i].get_position());
+                            
+                            ImGui::PushID(i);
+
+                            if (pieces[i].show_piece()) 
+                            {
+                                if (pieces[i].is_white() == game_state.is_white_turn)
+                                {
+                                    logger.AddLog("Selection : " + pieces[i].get_name());
+                                    
+                                    // simulation fin tour pour tester alternance
+                                    game_state.end_turn();
+                                }
+                                else
+                                {
+                                    logger.AddLog("[Erreur] Ce n'est pas votre tour !");
+                                }
+                            }
+                            ImGui::PopID();
+                        }
+                    }
                     ImGui::EndChild();
+
+                    // --- Logs ---
+                    logger.Draw(120.f); 
 
                     ImGui::End();
                 },
