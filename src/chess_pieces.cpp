@@ -12,11 +12,8 @@ Piece::Piece()
 
 // {}
 
-Piece::Piece(std::string name, bool is_white)
+Piece::Piece(std::string& name, bool is_white)
     : m_name(name), m_is_white(is_white), m_is_playable(true) {}
-
-// destructor
-Piece::~Piece() {}
 
 // setters
 void Piece::set_name(std::string name)
@@ -37,6 +34,11 @@ void Piece::set_current_case(std::string next_case)
 void Piece::set_position(ImVec2 new_pos)
 {
     m_position = new_pos;
+}
+
+void Piece::set_tile_size(float tile_size)
+{
+    m_tile_size = tile_size;
 }
 
 // getters
@@ -75,7 +77,7 @@ bool Piece::show_piece()
     return clicked;
 }
 
-std::vector<Piece> pieces_gen_v2()
+std::vector<Piece> pieces_gen_v2(float tile_size)
 {
     std::vector<Piece> pieces;
     for (int i{0}; i < 2; i++)
@@ -169,6 +171,7 @@ std::vector<Piece> pieces_gen_v2()
             std::cout << "nom piece " << name << " ;test final:" << piece.get_current_case() << std::endl;
             piece.set_name(name);
             piece.set_color(static_cast<bool>(i));
+            piece.set_tile_size(tile_size);
             pieces.push_back(piece);
         }
     }
