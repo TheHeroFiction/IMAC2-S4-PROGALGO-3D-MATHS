@@ -67,7 +67,7 @@ bool Piece::show_piece()
 {
     bool clicked = false;
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 1.f});
-    if (ImGui::Button(m_name.c_str(), ImVec2{50.f, 50.f}))
+    if (ImGui::Button(m_name.c_str(), ImVec2{m_tile_size, m_tile_size}))
     {
         std::cout << m_name << '\n';
         clicked = true;
