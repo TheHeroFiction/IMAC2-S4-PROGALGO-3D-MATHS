@@ -4,14 +4,14 @@
 // #include <imgui.h>
 #include <iostream>
 #include "chess_pieces.hpp"
-#include "quick_imgui/quick_imgui.hpp"
-#include "utils.hpp"
 #include "game_state.hpp"
 #include "logger.hpp"
-
-std::vector<Piece> pieces{pieces_gen_v2()};
+#include "quick_imgui/quick_imgui.hpp"
+#include "utils.hpp"
 
 const float TILE_SIZE = 50.f;
+
+std::vector<Piece> pieces{pieces_gen_v2(TILE_SIZE)};
 
 const std::map<std::string, ImVec2> TAB_POS{generate_tab_position(TILE_SIZE)};
 
@@ -27,11 +27,11 @@ int main()
 
     std::cout << "test: " << pieces[1].get_current_case() << '\n';
 
-    GameState game_state;
+    GameState  game_state;
     GameLogger logger;
 
     logger.AddLog("C'est parti !");
-    
+
     quick_imgui::loop(
         "Chess",
         {
@@ -69,23 +69,26 @@ int main()
                     // --- Header ---
                     ImGui::Text("Tour actuel : ");
                     ImGui::SameLine();
-                    if (game_state.is_white_turn) {
+                    if (game_state.is_white_turn)
+                    {
                         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Blancs");
                         ImGui::SameLine();
-                        ImGui::ColorButton("TurnW", ImVec4(1,1,1,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15,15));
-                    } else {
+                        ImGui::ColorButton("TurnW", ImVec4(1, 1, 1, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+                    }
+                    else
+                    {
                         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Noirs");
                         ImGui::SameLine();
-                        ImGui::ColorButton("TurnB", ImVec4(0,0,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15,15));
+                        ImGui::ColorButton("TurnB", ImVec4(0, 0, 0, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
                     }
 
                     ImGui::Separator();
                     ImGui::Spacing();
 
                     // --- Le Plateau et les Pièces ---
-                    ImVec2 boardStartPos = ImGui::GetCursorScreenPos(); 
+                    ImVec2 boardStartPos = ImGui::GetCursorScreenPos();
 
-                    draw_board(TILE_SIZE); 
+                    draw_board(TILE_SIZE);
 
                     ImGui::SetCursorScreenPos(boardStartPos);
 
@@ -94,15 +97,15 @@ int main()
                         for (int i{0}; i < pieces.size(); i++)
                         {
                             ImGui::SetCursorPos(pieces[i].get_position());
-                            
+
                             ImGui::PushID(i);
 
-                            if (pieces[i].show_piece()) 
+                            if (pieces[i].show_piece())
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
                                     logger.AddLog("Selection : " + pieces[i].get_name());
-                                    
+
                                     // simulation fin tour pour tester alternance
                                     game_state.end_turn();
                                 }
@@ -117,7 +120,7 @@ int main()
                     ImGui::EndChild();
 
                     // --- Logs ---
-                    logger.Draw(120.f); 
+                    logger.Draw(120.f);
 
                     ImGui::End();
                 },
