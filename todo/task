@@ -7,8 +7,8 @@
 (X) Le plateau commence avec les pièces disposées ainsi, les blancs toujours en bas
 (X) Chaque joueur joue tour à tour. On ne peut pas déplacer deux pièces d'une même couleur d'affilée.
 (X) Ce sont toujours les blancs qui commencent la partie
-( ) Quand on clique sur une pièce elle devient sélectionnée, puis quand on clique sur une case la pièce sélectionnée se déplace sur cette case (si le coup est valide). On peut désélectionner la pièce avec un clic-droit (if (ImGui::IsMouseClicked( ImGuiMouseButton_Right ))).
-( ) Quand une pièce est sélectionnée, indiquer toutes les cases sur lesquelles elle peut se déplacer
+(~) Quand on clique sur une pièce elle devient sélectionnée, puis quand on clique sur une case la pièce sélectionnée se déplace sur cette case (si le coup est valide). On peut désélectionner la pièce avec un clic-droit (if (ImGui::IsMouseClicked( ImGuiMouseButton_Right ))).
+(~) Quand une pièce est sélectionnée, indiquer toutes les cases sur lesquelles elle peut se déplacer
 ( ) Victoire quand on mange le roi adverse (la détection automatique des échecs, et échec et mat, n'est pas demandée)
 ( ) La tour se déplace en ligne droite, d'autant de cases qu'elle veut tant qu'elle n'est pas bloquée par une autre pièce
 ( ) Le fou se déplace en diagonale, d'autant de cases qu'il veut tant qu'il n'est pas bloqué par une autre pièce

@@ -3,6 +3,7 @@
 #include "chessboard.hpp"
 // #include <imgui.h>
 #include <iostream>
+#include <utility>
 #include "chess_pieces.hpp"
 #include "game_state.hpp"
 #include "logger.hpp"
@@ -11,9 +12,11 @@
 
 const float TILE_SIZE = 50.f;
 
-std::vector<Piece> pieces{pieces_gen_v2(TILE_SIZE)};
+std::vector<Piece> pieces{pieces_gen(TILE_SIZE)};
 
 const std::map<std::string, ImVec2> TAB_POS{generate_tab_position(TILE_SIZE)};
+
+std::pair<std::string, PIECE_STATUS> current_piece{"", PIECE_STATUS::UNSELECTED};
 
 int main()
 {
@@ -25,7 +28,7 @@ int main()
         std::cout << pieces[i].get_name() << pieces[i].get_current_case() << '\n';
     }
 
-    std::cout << "test: " << pieces[1].get_current_case() << '\n';
+    std::cout << "test: " << pieces[16].get_name() << '\n';
 
     GameState  game_state;
     GameLogger logger;
@@ -100,14 +103,16 @@ int main()
 
                             ImGui::PushID(i);
 
-                            if (pieces[i].show_piece())
+                            if (pieces[i].show_piece(current_piece, game_state.is_white_turn))
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
                                     logger.AddLog("Selection : " + pieces[i].get_name());
 
-                                    // simulation fin tour pour tester alternance
-                                    game_state.end_turn();
+                                    if (current_piece.first == "")
+                                    {
+                                        current_piece = {pieces[i].get_name(), PIECE_STATUS::SELECTED};
+                                    }
                                 }
                                 else
                                 {

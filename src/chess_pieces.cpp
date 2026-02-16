@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 // constructor
@@ -41,6 +42,11 @@ void Piece::set_tile_size(float tile_size)
     m_tile_size = tile_size;
 }
 
+void Piece::set_behaviour(Behaviour behaviour)
+{
+    m_behaviour = behaviour;
+}
+
 // getters
 std::string Piece::get_name()
 {
@@ -63,7 +69,7 @@ bool Piece::is_white() const
 }
 
 // others
-bool Piece::show_piece()
+bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn)
 {
     bool clicked = false;
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 1.f});
@@ -74,10 +80,28 @@ bool Piece::show_piece()
     };
     ImGui::PopStyleColor();
 
+    // How the piece can move
+    if (m_behaviour == Behaviour::Pawn && current_piece == std::pair(m_name, PIECE_STATUS::SELECTED))
+    {
+        ImGui::SetCursorPos(ImVec2(m_position.x, 100.f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.f, 0.f, 0.f, 1.f});
+        if (ImGui::Button("possiblity", ImVec2(m_tile_size, m_tile_size)))
+        {
+            current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+            is_white_turn = !is_white_turn;
+        }
+        ImGui::PopStyleColor();
+    }
+
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+    }
+
     return clicked;
 }
 
-std::vector<Piece> pieces_gen_v2(float tile_size)
+std::vector<Piece> pieces_gen(float tile_size)
 {
     std::vector<Piece> pieces;
     for (int i{0}; i < 2; i++)
@@ -114,6 +138,7 @@ std::vector<Piece> pieces_gen_v2(float tile_size)
                 name += std::to_string(j);
 
                 piece.set_current_case(std::string(1, static_cast<char>('a' + j)) + piece.get_current_case());
+                piece.set_behaviour(Behaviour::Pawn);
             }
             else if (j < 10)
             {
@@ -128,6 +153,7 @@ std::vector<Piece> pieces_gen_v2(float tile_size)
                 {
                     piece.set_current_case(std::string(1, static_cast<char>('h')) + piece.get_current_case());
                 }
+                piece.set_behaviour(Behaviour::Rook);
             }
             else if (j < 12)
             {
@@ -142,6 +168,7 @@ std::vector<Piece> pieces_gen_v2(float tile_size)
                 {
                     piece.set_current_case(std::string(1, static_cast<char>('g')) + piece.get_current_case());
                 }
+                piece.set_behaviour(Behaviour::Knight);
             }
             else if (j < 14)
             {
@@ -156,16 +183,19 @@ std::vector<Piece> pieces_gen_v2(float tile_size)
                 {
                     piece.set_current_case(std::string(1, static_cast<char>('f')) + piece.get_current_case());
                 }
+                piece.set_behaviour(Behaviour::Bishop);
             }
             else if (j == 14)
             {
                 name.push_back('Q'); // Queen
                 piece.set_current_case(std::string(1, static_cast<char>('d')) + piece.get_current_case());
+                piece.set_behaviour(Behaviour::Queen);
             }
             else
             {
                 name.push_back('K'); // King
                 piece.set_current_case(std::string(1, static_cast<char>('e')) + piece.get_current_case());
+                piece.set_behaviour(Behaviour::King);
             }
 
             std::cout << "nom piece " << name << " ;test final:" << piece.get_current_case() << std::endl;
