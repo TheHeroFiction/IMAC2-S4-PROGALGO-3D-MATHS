@@ -47,13 +47,16 @@ public:
     void set_behaviour(Behaviour behaviour);
 
     // getters
-    std::string get_name();
-    std::string get_current_case();
-    ImVec2      get_position();
+    std::string get_name() const;
+    std::string get_current_case() const;
+    ImVec2      get_position() const;
     bool        is_white() const;
 
     // others
-    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
+    // bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
+    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn, const std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
+    
+    std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
 };
 
 std::vector<Piece> pieces_gen(float tile_size);

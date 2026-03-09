@@ -64,9 +64,9 @@ int main()
                     // if (ImGui::Button("Yo", ImVec2{50.f, 50.f}))
                     //     std::cout << "Clicked button 3\n";
                     // ImGui::PopID();
-
+                    
                     // ImGui::PopStyleColor();
-
+                    
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                     // --- Header ---
@@ -103,7 +103,9 @@ int main()
 
                             ImGui::PushID(i);
 
-                            if (pieces[i].show_piece(current_piece, game_state.is_white_turn))
+                            // if (pieces[i].show_piece(current_piece, game_state.is_white_turn))
+                            // {
+                            if (pieces[i].show_piece(current_piece, game_state.is_white_turn, pieces, TAB_POS))
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
