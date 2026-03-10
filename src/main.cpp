@@ -22,6 +22,7 @@ int main()
 {
     assign_pos_pieces(pieces, TAB_POS);
     float value{0.f};
+    int   current_piece_id{32};
 
     for (int i{0}; i < 32; i++)
     {
@@ -64,9 +65,9 @@ int main()
                     // if (ImGui::Button("Yo", ImVec2{50.f, 50.f}))
                     //     std::cout << "Clicked button 3\n";
                     // ImGui::PopID();
-                    
+
                     // ImGui::PopStyleColor();
-                    
+
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                     // --- Header ---
@@ -103,18 +104,14 @@ int main()
 
                             ImGui::PushID(i);
 
-                            // if (pieces[i].show_piece(current_piece, game_state.is_white_turn))
-                            // {
-                            if (pieces[i].show_piece(current_piece, game_state.is_white_turn, pieces, TAB_POS))
+                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_white_turn, pieces, TAB_POS))
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
                                     logger.AddLog("Selection : " + pieces[i].get_name());
 
-                                    if (current_piece.first == "")
-                                    {
-                                        current_piece = {pieces[i].get_name(), PIECE_STATUS::SELECTED};
-                                    }
+                                    current_piece    = {pieces[i].get_name(), PIECE_STATUS::SELECTED};
+                                    current_piece_id = i;
                                 }
                                 else
                                 {
@@ -122,6 +119,14 @@ int main()
                                 }
                             }
                             ImGui::PopID();
+                        }
+                        // Put the selected piece in the first place in order to draw it first
+                        if (current_piece_id != 32 && pieces[0].get_name() != pieces[current_piece_id].get_name())
+                        {
+                            Piece temp{pieces[current_piece_id]};
+                            pieces[current_piece_id] = pieces[0];
+                            pieces[0]                = temp;
+                            current_piece_id         = 32;
                         }
                     }
                     ImGui::EndChild();

@@ -45,17 +45,21 @@ public:
     void set_position(ImVec2 new_pos);
     void set_tile_size(float tile_size);
     void set_behaviour(Behaviour behaviour);
+    void set_playability(bool state);
 
     // getters
     std::string get_name() const;
     std::string get_current_case() const;
     ImVec2      get_position() const;
     bool        is_white() const;
+    bool        is_playable() const;
+
+    // operators
 
     // others
     // bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
-    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn, const std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
-    
+    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
+
     std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
 };
 
