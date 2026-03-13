@@ -12,24 +12,15 @@
 
 const float TILE_SIZE = 50.f;
 
-std::vector<Piece> pieces{pieces_gen(TILE_SIZE)};
-
-const std::map<std::string, ImVec2> TAB_POS{generate_tab_position(TILE_SIZE)};
-
-std::pair<std::string, PIECE_STATUS> current_piece{"", PIECE_STATUS::UNSELECTED};
-
 int main()
 {
+    std::vector<Piece>                   pieces{pieces_gen(TILE_SIZE)};
+    const std::map<std::string, ImVec2>  TAB_POS{generate_tab_position(TILE_SIZE)};
+    std::pair<std::string, PIECE_STATUS> current_piece{"", PIECE_STATUS::UNSELECTED};
+
     assign_pos_pieces(pieces, TAB_POS);
     float value{0.f};
     int   current_piece_id{32};
-
-    for (int i{0}; i < 32; i++)
-    {
-        std::cout << pieces[i].get_name() << pieces[i].get_current_case() << '\n';
-    }
-
-    std::cout << "test: " << pieces[16].get_name() << '\n';
 
     GameState  game_state;
     GameLogger logger;
@@ -73,17 +64,33 @@ int main()
                     // --- Header ---
                     ImGui::Text("Tour actuel : ");
                     ImGui::SameLine();
-                    if (game_state.is_white_turn)
+                    if (game_state.is_finished)
                     {
-                        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Blancs");
+                        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Game ended! ");
                         ImGui::SameLine();
-                        ImGui::ColorButton("TurnW", ImVec4(1, 1, 1, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+                        if (game_state.is_white_turn)
+                        {
+                            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Black won!");
+                        }
+                        else
+                        {
+                            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "White won!");
+                        }
                     }
                     else
                     {
-                        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Noirs");
-                        ImGui::SameLine();
-                        ImGui::ColorButton("TurnB", ImVec4(0, 0, 0, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+                        if (game_state.is_white_turn)
+                        {
+                            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Blancs");
+                            ImGui::SameLine();
+                            ImGui::ColorButton("TurnW", ImVec4(1, 1, 1, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+                        }
+                        else
+                        {
+                            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Noirs");
+                            ImGui::SameLine();
+                            ImGui::ColorButton("TurnB", ImVec4(0, 0, 0, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+                        }
                     }
 
                     ImGui::Separator();
@@ -104,7 +111,7 @@ int main()
 
                             ImGui::PushID(i);
 
-                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_white_turn, pieces, TAB_POS))
+                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS))
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
@@ -123,6 +130,7 @@ int main()
                         // Put the selected piece in the first place in order to draw it first
                         if (current_piece_id != 32 && pieces[0].get_name() != pieces[current_piece_id].get_name())
                         {
+                            // problem with where pieces have been eaten in start position
                             Piece temp{pieces[current_piece_id]};
                             pieces[current_piece_id] = pieces[0];
                             pieces[0]                = temp;
@@ -130,6 +138,33 @@ int main()
                         }
                     }
                     ImGui::EndChild();
+
+                    if (game_state.is_finished)
+                    {
+                        ImGui::SetCursorScreenPos(boardStartPos);
+                        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.8f, 0.8f, 0.8f, 0.5f});
+                        ImGui::BeginChild("End screen", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
+
+                        // RESTART
+                        if (ImGui::Button("New Game", ImVec2(TILE_SIZE, TILE_SIZE)))
+                        {
+                            game_state.is_white_turn = true;
+                            game_state.is_finished   = false;
+
+                            pieces = pieces_gen(TILE_SIZE);
+
+                            assign_pos_pieces(pieces, TAB_POS);
+
+                            current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+
+                            current_piece_id = 32;
+
+                            logger.AddLog("C'est parti !");
+                        }
+
+                        ImGui::EndChild();
+                        ImGui::PopStyleColor();
+                    }
 
                     // --- Logs ---
                     logger.Draw(120.f);

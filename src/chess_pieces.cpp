@@ -110,7 +110,7 @@ bool Piece::is_playable() const
 //     return clicked;
 // }
 
-bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos)
+bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos)
 {
     bool clicked = false;
 
@@ -129,9 +129,8 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
     // --- DESSIN DES POSSIBILITÉS (CARRÉS ROUGES) ---
     if (current_piece.first == m_name && current_piece.second == PIECE_STATUS::SELECTED)
     {
-        std::vector<std::string> valid_cases = get_possible_moves(all_pieces);
-        // ImDrawList*              draw_list   = ImGui::GetWindowDrawList();
-        std::string label_for_multiple_pieces = "";
+        std::vector<std::string> valid_cases               = get_possible_moves(all_pieces);
+        std::string              label_for_multiple_pieces = "";
 
         for (const std::string& case_name : valid_cases)
         {
@@ -149,6 +148,12 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
                         if (all_pieces[i].is_playable() && all_pieces[i].get_current_case() == case_name)
                         {
                             all_pieces[i].m_is_playable = false;
+
+                            if (all_pieces[i].get_name() == "WK" || all_pieces[i].get_name() == "DK")
+                            {
+                                is_game_finished = true;
+                            }
+
                             break;
                         }
                     }
@@ -206,7 +211,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             }
             else
             {
-                if (p->is_white() != m_is_white)
+                if (p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
                     possible_moves.push_back(target); // Ennemi : on peut manger, mais on s'arrête
                 break;                                // Bloqué par une pièce (amie ou ennemie)
             }
@@ -251,7 +256,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
                 const Piece* p = get_piece_at(f, r);
-                if (p == nullptr || p->is_white() != m_is_white)
+                if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
                     possible_moves.push_back(std::string(1, f) + std::to_string(r));
             }
         }
@@ -289,7 +294,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
                 const Piece* p = get_piece_at(f, r);
-                if (p == nullptr || p->is_white() != m_is_white)
+                if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
                     possible_moves.push_back(std::string(1, f) + std::to_string(r));
             }
         }
@@ -328,8 +333,6 @@ std::vector<Piece> pieces_gen(float tile_size)
                 }
             }
 
-            std::cout << "test number: " << piece.get_current_case() << std::endl;
-
             if (j < 8)
             {
                 name.push_back('P'); // Pawn
@@ -345,11 +348,11 @@ std::vector<Piece> pieces_gen(float tile_size)
 
                 if (j == 8)
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('a')) + piece.get_current_case());
+                    piece.set_current_case("a" + piece.get_current_case());
                 }
                 else
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('h')) + piece.get_current_case());
+                    piece.set_current_case("h" + piece.get_current_case());
                 }
                 piece.set_behaviour(Behaviour::Rook);
             }
@@ -360,11 +363,11 @@ std::vector<Piece> pieces_gen(float tile_size)
 
                 if (j == 10)
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('b')) + piece.get_current_case());
+                    piece.set_current_case("b" + piece.get_current_case());
                 }
                 else
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('g')) + piece.get_current_case());
+                    piece.set_current_case("g" + piece.get_current_case());
                 }
                 piece.set_behaviour(Behaviour::Knight);
             }
@@ -375,35 +378,32 @@ std::vector<Piece> pieces_gen(float tile_size)
 
                 if (j == 12)
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('c')) + piece.get_current_case());
+                    piece.set_current_case("c" + piece.get_current_case());
                 }
                 else
                 {
-                    piece.set_current_case(std::string(1, static_cast<char>('f')) + piece.get_current_case());
+                    piece.set_current_case("f" + piece.get_current_case());
                 }
                 piece.set_behaviour(Behaviour::Bishop);
             }
             else if (j == 14)
             {
                 name.push_back('Q'); // Queen
-                piece.set_current_case(std::string(1, static_cast<char>('d')) + piece.get_current_case());
+                piece.set_current_case("d" + piece.get_current_case());
                 piece.set_behaviour(Behaviour::Queen);
             }
             else
             {
                 name.push_back('K'); // King
-                piece.set_current_case(std::string(1, static_cast<char>('e')) + piece.get_current_case());
+                piece.set_current_case("e" + piece.get_current_case());
                 piece.set_behaviour(Behaviour::King);
             }
-
-            std::cout << "nom piece " << name << " ;test final:" << piece.get_current_case() << std::endl;
             piece.set_name(name);
             piece.set_color(static_cast<bool>(i));
             piece.set_tile_size(tile_size);
             pieces.push_back(piece);
         }
     }
-    std::cout << "test pre retour: " << pieces[0].get_name() << "; case:" << pieces[0].get_current_case() << std::endl;
     return pieces;
 }
 

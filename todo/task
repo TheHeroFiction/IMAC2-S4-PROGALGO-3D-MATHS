@@ -9,7 +9,7 @@
 (X) Ce sont toujours les blancs qui commencent la partie
 (X) Quand on clique sur une pièce elle devient sélectionnée, puis quand on clique sur une case la pièce sélectionnée se déplace sur cette case (si le coup est valide). On peut désélectionner la pièce avec un clic-droit (if (ImGui::IsMouseClicked( ImGuiMouseButton_Right ))).
 (X) Quand une pièce est sélectionnée, indiquer toutes les cases sur lesquelles elle peut se déplacer
-( ) Victoire quand on mange le roi adverse (la détection automatique des échecs, et échec et mat, n'est pas demandée)
+(X) Victoire quand on mange le roi adverse (la détection automatique des échecs, et échec et mat, n'est pas demandée)
 (X) Le cavalier se déplace en L
 (X) La dame peut se déplacer dans toutes les directions (ligne droite ou diagonale), tant qu'elle n'est pas bloquée par une autre pièce
 (X) Le roi peut se déplacer d'une case dans toutes les directions

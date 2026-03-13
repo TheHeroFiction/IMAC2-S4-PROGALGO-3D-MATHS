@@ -58,7 +58,7 @@ public:
 
     // others
     // bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
-    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
+    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
 
     std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
 };
