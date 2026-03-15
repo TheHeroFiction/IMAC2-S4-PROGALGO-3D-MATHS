@@ -14,11 +14,10 @@ const float TILE_SIZE = 50.f;
 
 int main()
 {
-    std::vector<Piece>                   pieces{pieces_gen(TILE_SIZE)};
+    std::vector<Piece>                   pieces;
     const std::map<std::string, ImVec2>  TAB_POS{generate_tab_position(TILE_SIZE)};
     std::pair<std::string, PIECE_STATUS> current_piece{"", PIECE_STATUS::UNSELECTED};
 
-    assign_pos_pieces(pieces, TAB_POS);
     float value{0.f};
     int   current_piece_id{32};
 
@@ -30,7 +29,10 @@ int main()
     quick_imgui::loop(
         "Chess",
         {
-            .init = [&]() {},
+            .init = [&]() {
+                pieces = pieces_gen(TILE_SIZE);
+                assign_pos_pieces(pieces, TAB_POS);
+            },
             .loop =
                 [&]() {
                     ImGui::ShowDemoWindow(); // This opens a window which shows tons of examples of what you can do with ImGui. You should check it out! Also, you can use the "Item Picker" in the top menu of that demo window: then click on any widget and it will show you the corresponding code directly in your IDE!
@@ -142,11 +144,22 @@ int main()
                     if (game_state.is_finished)
                     {
                         ImGui::SetCursorScreenPos(boardStartPos);
-                        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.8f, 0.8f, 0.8f, 0.5f});
+                        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
                         ImGui::BeginChild("End screen", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
 
+                        ImGui::SetWindowFontScale(1.5f);
+
+                        ImVec2 buttonSize(180.f, 55.f);
+                        float x_offset = (ImGui::GetWindowWidth() - buttonSize.x) * 0.5f;
+                        float y_offset = (ImGui::GetWindowHeight() - buttonSize.y) * 0.5f;
+                        ImGui::SetCursorPos(ImVec2(x_offset, y_offset));
+
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.3f, 1.0f));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.4f, 1.0f));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.2f, 1.0f));
+
                         // RESTART
-                        if (ImGui::Button("New Game", ImVec2(TILE_SIZE, TILE_SIZE)))
+                        if (ImGui::Button("New Game", buttonSize))
                         {
                             game_state.is_white_turn = true;
                             game_state.is_finished   = false;
@@ -161,6 +174,9 @@ int main()
 
                             logger.AddLog("C'est parti !");
                         }
+
+                        ImGui::PopStyleColor(3);
+                        ImGui::SetWindowFontScale(1.0f);
 
                         ImGui::EndChild();
                         ImGui::PopStyleColor();

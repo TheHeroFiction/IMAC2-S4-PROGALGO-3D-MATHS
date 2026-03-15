@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "utils.hpp"
 
 // constructor
 Piece::Piece()
@@ -51,6 +52,11 @@ void Piece::set_playability(bool state)
 {
     m_is_playable = state;
 }
+
+void Piece::set_texture_id(unsigned int id) {
+    m_texture_id = id;
+}
+
 // getters
 std::string Piece::get_name() const
 {
@@ -76,6 +82,16 @@ bool Piece::is_playable() const
 {
     return m_is_playable;
 }
+
+unsigned int Piece::get_texture_id() const {
+    return m_texture_id;
+}
+
+Behaviour Piece::get_behaviour() const
+{
+    return m_behaviour;
+}
+
 // others
 
 // bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn)
@@ -119,12 +135,32 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
     ImVec2 board_origin = ImVec2(piece_screen_pos.x - m_position.x, piece_screen_pos.y - m_position.y);
 
     // --- DESSIN DE LA PIÈCE ---
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 0.8f});
-    if (ImGui::Button(m_name.c_str(), ImVec2{m_tile_size, m_tile_size}))
+    // ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 0.8f});
+    // if (ImGui::Button(m_name.c_str(), ImVec2{m_tile_size, m_tile_size}))
+    // {
+    //     clicked = true;
+    // };
+    // ImGui::PopStyleColor();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f)); 
+
+    if (ImGui::ImageButton(
+            m_name.c_str(), 
+            (void*)(intptr_t)m_texture_id, // Cast (void*)(intptr_t) obligatoire pour ImGui, c'est comme ça qu'il lit les IDs de texture OpenGL.
+            ImVec2(m_tile_size, m_tile_size), 
+            ImVec2(0,0), ImVec2(1,1), // Coordonnées UV (on prend toute l'image)
+            ImVec4(0,0,0,0),          // Background (transparent)
+            ImVec4(1,1,1,1)           // Teinte (blanche par défaut pour ne pas altérer l'image)
+        ))
     {
         clicked = true;
-    };
-    ImGui::PopStyleColor();
+    }
+
+    ImGui::PopStyleColor(1);
+
+    ImGui::PopStyleVar();
 
     // --- DESSIN DES POSSIBILITÉS (CARRÉS ROUGES) ---
     if (current_piece.first == m_name && current_piece.second == PIECE_STATUS::SELECTED)
@@ -398,6 +434,45 @@ std::vector<Piece> pieces_gen(float tile_size)
                 piece.set_current_case("e" + piece.get_current_case());
                 piece.set_behaviour(Behaviour::King);
             }
+
+            // Fabrique le nom du fichier image
+            std::string file_path = "../../chess_pieces_images/";
+
+            switch (piece.get_behaviour()) 
+            {   
+                case Behaviour::Pawn:   
+                    file_path += "pawn"; 
+                    break;
+                case Behaviour::Rook:   
+                    file_path += "rook"; 
+                    break;
+                case Behaviour::Knight: 
+                    file_path += "knight"; 
+                    break;
+                case Behaviour::Bishop: 
+                    file_path += "bishop"; 
+                    break;
+                case Behaviour::Queen:  
+                    file_path += "queen"; 
+                    break;
+                case Behaviour::King:   
+                    file_path += "king"; 
+                    break;
+            }
+            
+            if (i == 0) 
+            {
+                file_path += "_black.png"; // i==0 c'est les noirs
+            } 
+            else 
+            {
+                file_path += "_white.png";
+            }
+
+            // Charge la texture et la donne à la pièce
+            unsigned int tex_id = load_texture_from_file(file_path.c_str());
+            piece.set_texture_id(tex_id);
+
             piece.set_name(name);
             piece.set_color(static_cast<bool>(i));
             piece.set_tile_size(tile_size);

@@ -28,6 +28,7 @@ private:
     ImVec2      m_position;
     float       m_tile_size;
     Behaviour   m_behaviour;
+    unsigned int m_texture_id;
 
 public:
     // constructor
@@ -46,6 +47,7 @@ public:
     void set_tile_size(float tile_size);
     void set_behaviour(Behaviour behaviour);
     void set_playability(bool state);
+    void set_texture_id(unsigned int id);
 
     // getters
     std::string get_name() const;
@@ -53,6 +55,8 @@ public:
     ImVec2      get_position() const;
     bool        is_white() const;
     bool        is_playable() const;
+    unsigned int get_texture_id() const;
+    Behaviour   get_behaviour() const;
 
     // operators
 
