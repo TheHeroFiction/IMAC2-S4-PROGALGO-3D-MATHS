@@ -4,6 +4,7 @@
 struct GameState {
     bool is_white_turn = true; // Les blancs commencent toujours
     bool is_finished   = false;
+    bool in_menu       = true;
 
     // Fonction pour changer le tour
     void end_turn()

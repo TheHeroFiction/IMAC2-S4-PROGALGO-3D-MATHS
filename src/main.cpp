@@ -24,7 +24,72 @@ int main()
     GameState  game_state;
     GameLogger logger;
 
-    logger.AddLog("C'est parti !");
+    auto show_mode_selection = [&](ImVec2 boardStartPos) 
+    {
+        ImGui::SetCursorScreenPos(boardStartPos);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
+        ImGui::BeginChild("Mode Selection", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
+
+        ImGui::SetWindowFontScale(1.3f);
+
+        ImVec2 buttonSize(200.f, 50.f);
+        float spacing = 15.f;
+
+        float total_height = (buttonSize.y * 3) + (spacing * 2);
+
+        float x_offset = (ImGui::GetWindowWidth() - buttonSize.x) * 0.5f;
+        float y_offset = (ImGui::GetWindowHeight() - total_height) * 0.5f;
+
+        ImGui::SetCursorPos(ImVec2(x_offset, y_offset));
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.4f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.2f, 1.0f));
+
+        // Mode Normal (ou Restart)
+        std::string btn_label = game_state.is_finished ? "Rejouer Normal" : "Mode normal";
+        if (ImGui::Button(btn_label.c_str(), buttonSize))
+        {
+            game_state.in_menu       = false;
+            game_state.is_finished   = false;
+            game_state.is_white_turn = true;
+
+            pieces = pieces_gen(TILE_SIZE);
+            assign_pos_pieces(pieces, TAB_POS);
+
+            current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+            current_piece_id = 32;
+
+            logger.Clear();
+            logger.AddLog("C'est parti en mode normal !");
+        }
+
+        ImGui::SetCursorPosX(x_offset);
+        ImGui::Dummy(ImVec2(0.f, spacing));
+        ImGui::SetCursorPosX(x_offset);
+
+        // Mode 3D
+        if (ImGui::Button("Mode 3D", buttonSize))
+        {
+            logger.AddLog("Le mode 3D sera bientôt disponible !");
+        }
+
+        ImGui::SetCursorPosX(x_offset);
+        ImGui::Dummy(ImVec2(0.f, spacing));
+        ImGui::SetCursorPosX(x_offset);
+
+        // Mode Aléatoire
+        if (ImGui::Button("Mode aléatoire", buttonSize))
+        {
+            logger.AddLog("Le mode aléatoire sera bientot disponible !");
+        }
+
+        ImGui::PopStyleColor(3);
+        ImGui::SetWindowFontScale(1.0f);
+        
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+    };
 
     quick_imgui::loop(
         "Chess",
@@ -141,45 +206,9 @@ int main()
                     }
                     ImGui::EndChild();
 
-                    if (game_state.is_finished)
+                    if (game_state.in_menu || game_state.is_finished)
                     {
-                        ImGui::SetCursorScreenPos(boardStartPos);
-                        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
-                        ImGui::BeginChild("End screen", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
-
-                        ImGui::SetWindowFontScale(1.5f);
-
-                        ImVec2 buttonSize(180.f, 55.f);
-                        float x_offset = (ImGui::GetWindowWidth() - buttonSize.x) * 0.5f;
-                        float y_offset = (ImGui::GetWindowHeight() - buttonSize.y) * 0.5f;
-                        ImGui::SetCursorPos(ImVec2(x_offset, y_offset));
-
-                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.3f, 1.0f));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.4f, 1.0f));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.2f, 1.0f));
-
-                        // RESTART
-                        if (ImGui::Button("New Game", buttonSize))
-                        {
-                            game_state.is_white_turn = true;
-                            game_state.is_finished   = false;
-
-                            pieces = pieces_gen(TILE_SIZE);
-
-                            assign_pos_pieces(pieces, TAB_POS);
-
-                            current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
-
-                            current_piece_id = 32;
-
-                            logger.AddLog("C'est parti !");
-                        }
-
-                        ImGui::PopStyleColor(3);
-                        ImGui::SetWindowFontScale(1.0f);
-
-                        ImGui::EndChild();
-                        ImGui::PopStyleColor();
+                        show_mode_selection(boardStartPos);
                     }
 
                     // --- Logs ---
