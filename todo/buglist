@@ -1,0 +1,6 @@
+- Crash quand:
+-- fou noir est mangé par tour blanche sur la case g1 ( non résolu juste mis en commentaires pour le moment )
+--- bug introduit par la nouvelle section qui est censé géré les pieces non jouables
+
+- Zone jouable et injouable ( non résolu )
+-- dans certains cas, les pieces peuvent se déplacer là où elles ne devrait pas et inversement 

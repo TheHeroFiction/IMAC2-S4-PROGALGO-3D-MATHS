@@ -21,13 +21,13 @@ enum class PIECE_STATUS {
 
 class Piece {
 private:
-    std::string m_name;
-    bool        m_is_white;
-    bool        m_is_playable;
-    std::string m_current_case;
-    ImVec2      m_position;
-    float       m_tile_size;
-    Behaviour   m_behaviour;
+    std::string  m_name;
+    bool         m_is_white;
+    bool         m_is_playable;
+    std::string  m_current_case;
+    ImVec2       m_position;
+    float        m_tile_size;
+    Behaviour    m_behaviour;
     unsigned int m_texture_id;
 
 public:
@@ -50,19 +50,19 @@ public:
     void set_texture_id(unsigned int id);
 
     // getters
-    std::string get_name() const;
-    std::string get_current_case() const;
-    ImVec2      get_position() const;
-    bool        is_white() const;
-    bool        is_playable() const;
+    std::string  get_name() const;
+    std::string  get_current_case() const;
+    ImVec2       get_position() const;
+    bool         is_white() const;
+    bool         is_playable() const;
     unsigned int get_texture_id() const;
-    Behaviour   get_behaviour() const;
+    Behaviour    get_behaviour() const;
 
     // operators
 
     // others
     // bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
-    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos);
+    bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted);
 
     std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
 };
@@ -70,3 +70,5 @@ public:
 std::vector<Piece> pieces_gen(float tile_size);
 
 void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos);
+
+unsigned int give_texture_id(Behaviour Piece_Behaviour, int i);

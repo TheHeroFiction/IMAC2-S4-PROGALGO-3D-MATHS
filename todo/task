@@ -15,4 +15,4 @@
 (X) Le roi peut se déplacer d'une case dans toutes les directions
 (X) Le pion peut avancer d'une case, et peut manger les pièces qui sont une case en diagonale devant lui
 (X) Si il n'a pas encore bougé, un pion peut avancer de deux cases d'un coup
-( ) Quand un pion arrive sur la dernière ligne du plateau, il est transformé en une autre pièce (c'est le joueur qui choisit : une dame, une tour, un fou ou un cavalier). Pour que le joueur choisisse, vous pouvez par exemple faire apparaître une fenêtre modale avec ImGui.
+(X) Quand un pion arrive sur la dernière ligne du plateau, il est transformé en une autre pièce (c'est le joueur qui choisit : une dame, une tour, un fou ou un cavalier). Pour que le joueur choisisse, vous pouvez par exemple faire apparaître une fenêtre modale avec ImGui.

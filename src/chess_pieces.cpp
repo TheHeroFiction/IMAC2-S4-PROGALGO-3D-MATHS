@@ -6,6 +6,9 @@
 #include <vector>
 #include "utils.hpp"
 
+const std::vector<Behaviour>   titles{Behaviour::Bishop, Behaviour::Knight, Behaviour::Rook, Behaviour::Queen};
+const std::vector<std::string> titles_names{"Bishop", "Knight", "Rook", "Queen"};
+
 // constructor
 Piece::Piece()
     : m_name(""), m_is_white(false), m_is_playable(true) {}
@@ -53,7 +56,8 @@ void Piece::set_playability(bool state)
     m_is_playable = state;
 }
 
-void Piece::set_texture_id(unsigned int id) {
+void Piece::set_texture_id(unsigned int id)
+{
     m_texture_id = id;
 }
 
@@ -83,7 +87,8 @@ bool Piece::is_playable() const
     return m_is_playable;
 }
 
-unsigned int Piece::get_texture_id() const {
+unsigned int Piece::get_texture_id() const
+{
     return m_texture_id;
 }
 
@@ -126,7 +131,7 @@ Behaviour Piece::get_behaviour() const
 //     return clicked;
 // }
 
-bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos)
+bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
 {
     bool clicked = false;
 
@@ -144,15 +149,15 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f)); 
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
 
     if (ImGui::ImageButton(
-            m_name.c_str(), 
+            m_name.c_str(),
             (void*)(intptr_t)m_texture_id, // Cast (void*)(intptr_t) obligatoire pour ImGui, c'est comme ça qu'il lit les IDs de texture OpenGL.
-            ImVec2(m_tile_size, m_tile_size), 
-            ImVec2(0,0), ImVec2(1,1), // Coordonnées UV (on prend toute l'image)
-            ImVec4(0,0,0,0),          // Background (transparent)
-            ImVec4(1,1,1,1)           // Teinte (blanche par défaut pour ne pas altérer l'image)
+            ImVec2(m_tile_size, m_tile_size),
+            ImVec2(0, 0), ImVec2(1, 1), // Coordonnées UV (on prend toute l'image)
+            ImVec4(0, 0, 0, 0),         // Background (transparent)
+            ImVec4(1, 1, 1, 1)          // Teinte (blanche par défaut pour ne pas altérer l'image)
         ))
     {
         clicked = true;
@@ -192,6 +197,10 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
 
                             break;
                         }
+                    }
+                    if (((m_is_white && case_name[1] == '8') || (!(m_is_white) && case_name[1] == '1')) && m_behaviour == Behaviour::Pawn)
+                    {
+                        to_be_promoted = true;
                     }
                     m_position     = target_pos;
                     m_current_case = case_name;
@@ -435,43 +444,7 @@ std::vector<Piece> pieces_gen(float tile_size)
                 piece.set_behaviour(Behaviour::King);
             }
 
-            // Fabrique le nom du fichier image
-            std::string file_path = "../../chess_pieces_images/";
-
-            switch (piece.get_behaviour()) 
-            {   
-                case Behaviour::Pawn:   
-                    file_path += "pawn"; 
-                    break;
-                case Behaviour::Rook:   
-                    file_path += "rook"; 
-                    break;
-                case Behaviour::Knight: 
-                    file_path += "knight"; 
-                    break;
-                case Behaviour::Bishop: 
-                    file_path += "bishop"; 
-                    break;
-                case Behaviour::Queen:  
-                    file_path += "queen"; 
-                    break;
-                case Behaviour::King:   
-                    file_path += "king"; 
-                    break;
-            }
-            
-            if (i == 0) 
-            {
-                file_path += "_black.png"; // i==0 c'est les noirs
-            } 
-            else 
-            {
-                file_path += "_white.png";
-            }
-
-            // Charge la texture et la donne à la pièce
-            unsigned int tex_id = load_texture_from_file(file_path.c_str());
-            piece.set_texture_id(tex_id);
+            piece.set_texture_id(give_texture_id(piece.get_behaviour(), i));
 
             piece.set_name(name);
             piece.set_color(static_cast<bool>(i));
@@ -488,4 +461,45 @@ void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2>
     {
         pieces[i].set_position(tab_pos[pieces[i].get_current_case()]);
     }
+}
+
+unsigned int give_texture_id(Behaviour Piece_Behaviour, int i)
+{
+    // Fabrique le nom du fichier image
+    std::string file_path = "../../chess_pieces_images/";
+
+    switch (Piece_Behaviour)
+    {
+    case Behaviour::Pawn:
+        file_path += "pawn";
+        break;
+    case Behaviour::Rook:
+        file_path += "rook";
+        break;
+    case Behaviour::Knight:
+        file_path += "knight";
+        break;
+    case Behaviour::Bishop:
+        file_path += "bishop";
+        break;
+    case Behaviour::Queen:
+        file_path += "queen";
+        break;
+    case Behaviour::King:
+        file_path += "king";
+        break;
+    }
+
+    if (i == 0)
+    {
+        file_path += "_black.png"; // i==0 c'est les noirs
+    }
+    else
+    {
+        file_path += "_white.png";
+    }
+
+    // Charge la texture et la donne à la pièce
+    unsigned int tex_id = load_texture_from_file(file_path.c_str());
+    return tex_id;
 }

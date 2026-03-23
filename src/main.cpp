@@ -18,14 +18,16 @@ int main()
     const std::map<std::string, ImVec2>  TAB_POS{generate_tab_position(TILE_SIZE)};
     std::pair<std::string, PIECE_STATUS> current_piece{"", PIECE_STATUS::UNSELECTED};
 
+    std::vector<std::pair<std::string, Behaviour>> titles_for_promotions{{"Rook", Behaviour::Rook}, {"Knight", Behaviour::Knight}, {"Bishop", Behaviour::Bishop}, {"Queen", Behaviour::Queen}};
+
     float value{0.f};
     int   current_piece_id{32};
+    bool  to_be_promoted{false};
 
     GameState  game_state;
     GameLogger logger;
 
-    auto show_mode_selection = [&](ImVec2 boardStartPos) 
-    {
+    auto show_mode_selection = [&](ImVec2 boardStartPos) {
         ImGui::SetCursorScreenPos(boardStartPos);
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
         ImGui::BeginChild("Mode Selection", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
@@ -33,7 +35,7 @@ int main()
         ImGui::SetWindowFontScale(1.3f);
 
         ImVec2 buttonSize(200.f, 50.f);
-        float spacing = 15.f;
+        float  spacing = 15.f;
 
         float total_height = (buttonSize.y * 3) + (spacing * 2);
 
@@ -57,7 +59,7 @@ int main()
             pieces = pieces_gen(TILE_SIZE);
             assign_pos_pieces(pieces, TAB_POS);
 
-            current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+            current_piece    = std::pair("", PIECE_STATUS::UNSELECTED);
             current_piece_id = 32;
 
             logger.Clear();
@@ -86,7 +88,7 @@ int main()
 
         ImGui::PopStyleColor(3);
         ImGui::SetWindowFontScale(1.0f);
-        
+
         ImGui::EndChild();
         ImGui::PopStyleColor();
     };
@@ -96,8 +98,7 @@ int main()
         {
             .init = [&]() {
                 pieces = pieces_gen(TILE_SIZE);
-                assign_pos_pieces(pieces, TAB_POS);
-            },
+                assign_pos_pieces(pieces, TAB_POS); },
             .loop =
                 [&]() {
                     ImGui::ShowDemoWindow(); // This opens a window which shows tons of examples of what you can do with ImGui. You should check it out! Also, you can use the "Item Picker" in the top menu of that demo window: then click on any widget and it will show you the corresponding code directly in your IDE!
@@ -172,13 +173,40 @@ int main()
 
                     ImGui::BeginChild("PiecesLayer", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false, ImGuiWindowFlags_NoBackground);
                     {
+                        if (to_be_promoted)
+                        {
+                            ImGui::OpenPopup("Promote");
+
+                            // Always center this window when appearing
+                            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+                            if (ImGui::BeginPopupModal("Promote", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+                            {
+                                ImGui::Text("Choose the promotion you want !");
+                                ImGui::Separator();
+
+                                for (int i{0}; i < titles_for_promotions.size(); i++)
+                                {
+                                    if (ImGui::Button(titles_for_promotions[i].first.c_str(), ImVec2(120, 0)))
+                                    {
+                                        to_be_promoted = false;
+                                        pieces[0].set_behaviour(titles_for_promotions[i].second);
+                                        pieces[0].set_texture_id(give_texture_id(titles_for_promotions[i].second, pieces[0].is_white()));
+                                        ImGui::CloseCurrentPopup();
+                                    }
+                                    ImGui::SameLine();
+                                }
+                                ImGui::EndPopup();
+                            }
+                        }
                         for (int i{0}; i < pieces.size(); i++)
                         {
                             ImGui::SetCursorPos(pieces[i].get_position());
 
                             ImGui::PushID(i);
 
-                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS))
+                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS, to_be_promoted))
                             {
                                 if (pieces[i].is_white() == game_state.is_white_turn)
                                 {
