@@ -1,4 +1,5 @@
 #pragma once
+#include <imgui.h>
 #include <string>
 
 struct GameState {
@@ -23,5 +24,42 @@ struct GameState {
         {
             return "Noirs";
         }
+    }
+
+    void game_header() const
+    {
+        ImGui::Text("Tour actuel : ");
+        ImGui::SameLine();
+        if (is_finished)
+        {
+            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Game ended! ");
+            ImGui::SameLine();
+            if (is_white_turn)
+            {
+                ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Black won!");
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "White won!");
+            }
+        }
+        else
+        {
+            if (is_white_turn)
+            {
+                ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Blancs");
+                ImGui::SameLine();
+                ImGui::ColorButton("TurnW", ImVec4(1, 1, 1, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.f), "Noirs");
+                ImGui::SameLine();
+                ImGui::ColorButton("TurnB", ImVec4(0, 0, 0, 1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoPicker, ImVec2(15, 15));
+            }
+        }
+
+        ImGui::Separator();
+        ImGui::Spacing();
     }
 };

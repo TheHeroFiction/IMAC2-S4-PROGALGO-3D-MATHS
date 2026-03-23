@@ -233,7 +233,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         std::string target = std::string(1, f) + std::to_string(r);
         for (const auto& p : board_pieces)
         {
-            if (p.get_current_case() == target)
+            if (p.get_current_case() == target && p.is_playable())
                 return &p;
         }
         return nullptr;
@@ -254,9 +254,13 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             {
                 possible_moves.push_back(target); // Case vide, on peut y aller
             }
+            else if (p->is_white() == m_is_white && !(p->is_playable()))
+            {
+                possible_moves.push_back(target);
+            }
             else
             {
-                if (p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
+                if (p->is_white() != m_is_white)
                     possible_moves.push_back(target); // Ennemi : on peut manger, mais on s'arrête
                 break;                                // Bloqué par une pièce (amie ou ennemie)
             }
