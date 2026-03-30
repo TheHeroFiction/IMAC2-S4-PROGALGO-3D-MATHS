@@ -1,3 +1,3 @@
 #pragma once
 
-void draw_board(float caseSize = 50.f);
+void draw_board(float tileSize);

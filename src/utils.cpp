@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../lib/stb_image.h"
 
-std::map<std::string, ImVec2> generate_tab_position(float const tile_size)
+std::map<std::string, ImVec2> generate_tab_position(float tile_size)
 {
     std::map<std::string, ImVec2> tab_pos;
     for (int x{0}; x < 8; x++)
@@ -27,11 +27,11 @@ std::map<std::string, ImVec2> generate_tab_position(float const tile_size)
 
 GLuint load_texture_from_file(const char* filename)
 {
-    int image_width = 0;
-    int image_height = 0;
-    int channels = 0;
-    unsigned char* image_data = stbi_load(filename, &image_width, &image_height, &channels, 4);
-    
+    int            image_width  = 0;
+    int            image_height = 0;
+    int            channels     = 0;
+    unsigned char* image_data   = stbi_load(filename, &image_width, &image_height, &channels, 4);
+
     if (image_data == nullptr)
     {
         std::cout << "Erreur : Impossible de charger l'image " << filename << "\n";

@@ -1,4 +1,5 @@
 #include "game_controller.hpp"
+#include "utils.hpp"
 
 std::vector<std::pair<std::string, Behaviour>> titles_for_promotions{{"Rook", Behaviour::Rook}, {"Knight", Behaviour::Knight}, {"Bishop", Behaviour::Bishop}, {"Queen", Behaviour::Queen}};
 
@@ -98,4 +99,198 @@ void promotion_screen(bool& to_be_promoted, std::vector<Piece>& pieces)
             ImGui::EndPopup();
         }
     }
+}
+
+void draw_pieces(GameState& game_state, GameLogger& logger, bool& to_be_promoted, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, std::pair<std::string, PIECE_STATUS>& current_piece, int current_piece_id)
+{
+    for (int i{0}; i < pieces.size(); i++)
+    {
+        ImGui::SetCursorPos(pieces[i].get_position());
+
+        ImGui::PushID(i);
+
+        if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS, to_be_promoted))
+        {
+            if (pieces[i].is_white() == game_state.is_white_turn)
+            {
+                logger.AddLog("Selection : " + pieces[i].get_name());
+
+                current_piece    = {pieces[i].get_name(), PIECE_STATUS::SELECTED};
+                current_piece_id = i;
+            }
+            else
+            {
+                logger.AddLog("[Erreur] Ce n'est pas votre tour !");
+            }
+        }
+        ImGui::PopID();
+    }
+    // Put the selected piece in the first place in order to draw it first
+    if (current_piece_id != 32 && pieces[0].get_name() != pieces[current_piece_id].get_name())
+    {
+        // problem with where pieces have been eaten in start position
+        Piece temp{pieces[current_piece_id]};
+        pieces[current_piece_id] = pieces[0];
+        pieces[0]                = temp;
+        current_piece_id         = 32;
+    }
+}
+
+std::vector<Piece> pieces_gen(float tile_size)
+{
+    std::vector<Piece> pieces;
+    Piece              piece{};
+    std::string        name{};
+    for (int color{0}; color < 2; color++)
+    {
+        for (int j{0}; j < 16; j++)
+        {
+            name = {};
+            config_piece(color, j, piece, name, tile_size);
+            pieces.push_back(piece);
+        }
+    }
+    return pieces;
+}
+
+void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos)
+{
+    for (int i{0}; i < pieces.size(); i++)
+    {
+        pieces[i].set_position(tab_pos[pieces[i].get_current_tile()]);
+    }
+}
+
+void config_piece(int color, int j, Piece& piece, std::string& name, float tile_size)
+{
+    if (color == 0)
+    {
+        name.push_back('D'); // Dark aka Black
+        piece.set_current_tile("7");
+        if (j > 7)
+        {
+            piece.set_current_tile("8");
+        }
+    }
+    else
+    {
+        name.push_back('W'); // White
+        piece.set_current_tile("2");
+        if (j > 7)
+        {
+            piece.set_current_tile("1");
+        }
+    }
+
+    if (j < 8)
+    {
+        name.push_back('P'); // Pawn
+        name += std::to_string(j);
+
+        piece.set_current_tile(std::string(1, static_cast<char>('a' + j)) + piece.get_current_tile());
+        piece.set_behaviour(Behaviour::Pawn);
+    }
+    else if (j < 10)
+    {
+        name.push_back('R'); // Rook
+        name += std::to_string(j - 8);
+
+        if (j == 8)
+        {
+            piece.set_current_tile("a" + piece.get_current_tile());
+        }
+        else
+        {
+            piece.set_current_tile("h" + piece.get_current_tile());
+        }
+        piece.set_behaviour(Behaviour::Rook);
+    }
+    else if (j < 12)
+    {
+        name.push_back('H'); // Horse aka Knight
+        name += std::to_string(j - 10);
+
+        if (j == 10)
+        {
+            piece.set_current_tile("b" + piece.get_current_tile());
+        }
+        else
+        {
+            piece.set_current_tile("g" + piece.get_current_tile());
+        }
+        piece.set_behaviour(Behaviour::Knight);
+    }
+    else if (j < 14)
+    {
+        name.push_back('B'); // Bishop
+        name += std::to_string(j - 12);
+
+        if (j == 12)
+        {
+            piece.set_current_tile("c" + piece.get_current_tile());
+        }
+        else
+        {
+            piece.set_current_tile("f" + piece.get_current_tile());
+        }
+        piece.set_behaviour(Behaviour::Bishop);
+    }
+    else if (j == 14)
+    {
+        name.push_back('Q'); // Queen
+        piece.set_current_tile("d" + piece.get_current_tile());
+        piece.set_behaviour(Behaviour::Queen);
+    }
+    else
+    {
+        name.push_back('K'); // King
+        piece.set_current_tile("e" + piece.get_current_tile());
+        piece.set_behaviour(Behaviour::King);
+    }
+
+    piece.set_texture_id(give_texture_id(piece.get_behaviour(), color));
+    piece.set_name(name);
+    piece.set_color(static_cast<bool>(color));
+    piece.set_tile_size(tile_size);
+}
+
+unsigned int give_texture_id(Behaviour Piece_Behaviour, int i)
+{
+    // Fabrique le nom du fichier image
+    std::string file_path = "../../chess_pieces_images/";
+
+    switch (Piece_Behaviour)
+    {
+    case Behaviour::Pawn:
+        file_path += "pawn";
+        break;
+    case Behaviour::Rook:
+        file_path += "rook";
+        break;
+    case Behaviour::Knight:
+        file_path += "knight";
+        break;
+    case Behaviour::Bishop:
+        file_path += "bishop";
+        break;
+    case Behaviour::Queen:
+        file_path += "queen";
+        break;
+    case Behaviour::King:
+        file_path += "king";
+        break;
+    }
+
+    if (i == 0)
+    {
+        file_path += "_black.png"; // i==0 c'est les noirs
+    }
+    else
+    {
+        file_path += "_white.png";
+    }
+
+    // Charge la texture et la donne à la pièce
+    unsigned int tex_id = load_texture_from_file(file_path.c_str());
+    return tex_id;
 }

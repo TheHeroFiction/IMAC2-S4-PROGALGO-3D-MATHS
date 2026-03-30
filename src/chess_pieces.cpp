@@ -1,10 +1,7 @@
 #include "chess_pieces.hpp"
-#include <imgui.h>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-#include "utils.hpp"
 
 const std::vector<Behaviour>   titles{Behaviour::Bishop, Behaviour::Knight, Behaviour::Rook, Behaviour::Queen};
 const std::vector<std::string> titles_names{"Bishop", "Knight", "Rook", "Queen"};
@@ -12,10 +9,6 @@ const std::vector<std::string> titles_names{"Bishop", "Knight", "Rook", "Queen"}
 // constructor
 Piece::Piece()
     : m_name(""), m_is_white(false), m_is_playable(true) {}
-
-// Piece::Piece(Piece const& piece)
-
-// {}
 
 Piece::Piece(std::string& name, bool is_white)
     : m_name(name), m_is_white(is_white), m_is_playable(true) {}
@@ -31,9 +24,9 @@ void Piece::set_color(bool is_white)
     m_is_white = is_white;
 }
 
-void Piece::set_current_case(std::string next_case)
+void Piece::set_current_tile(std::string next_tile)
 {
-    m_current_case = next_case;
+    m_current_tile = next_tile;
 }
 
 void Piece::set_position(ImVec2 new_pos)
@@ -67,9 +60,9 @@ std::string Piece::get_name() const
     return m_name;
 }
 
-std::string Piece::get_current_case() const
+std::string Piece::get_current_tile() const
 {
-    return m_current_case;
+    return m_current_tile;
 }
 
 ImVec2 Piece::get_position() const
@@ -99,38 +92,6 @@ Behaviour Piece::get_behaviour() const
 
 // others
 
-// bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn)
-// {
-//     bool clicked = false;
-//     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 1.f});
-//     if (ImGui::Button(m_name.c_str(), ImVec2{m_tile_size, m_tile_size}))
-//     {
-//         std::cout << m_name << '\n';
-//         clicked = true;
-//     };
-//     ImGui::PopStyleColor();
-
-//     // How the piece can move
-//     if (m_behaviour == Behaviour::Pawn && current_piece == std::pair(m_name, PIECE_STATUS::SELECTED))
-//     {
-//         ImGui::SetCursorPos(ImVec2(m_position.x, 100.f));
-//         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.f, 0.f, 0.f, 1.f});
-//         if (ImGui::Button("possiblity", ImVec2(m_tile_size, m_tile_size)))
-//         {
-//             current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
-//             is_white_turn = !is_white_turn;
-//         }
-//         ImGui::PopStyleColor();
-//     }
-
-//     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-//     {
-//         current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
-//     }
-
-//     return clicked;
-// }
-
 bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
 {
     bool clicked = false;
@@ -138,14 +99,6 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
     ImVec2 piece_screen_pos = ImGui::GetCursorScreenPos();
 
     ImVec2 board_origin = ImVec2(piece_screen_pos.x - m_position.x, piece_screen_pos.y - m_position.y);
-
-    // --- DESSIN DE LA PIÈCE ---
-    // ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{static_cast<float>(m_is_white), static_cast<float>(m_is_white), static_cast<float>(m_is_white), 0.8f});
-    // if (ImGui::Button(m_name.c_str(), ImVec2{m_tile_size, m_tile_size}))
-    // {
-    //     clicked = true;
-    // };
-    // ImGui::PopStyleColor();
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
 
@@ -170,14 +123,14 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
     // --- DESSIN DES POSSIBILITÉS (CARRÉS ROUGES) ---
     if (current_piece.first == m_name && current_piece.second == PIECE_STATUS::SELECTED)
     {
-        std::vector<std::string> valid_cases               = get_possible_moves(all_pieces);
+        std::vector<std::string> valid_tiles               = get_possible_moves(all_pieces);
         std::string              label_for_multiple_pieces = "";
 
-        for (const std::string& case_name : valid_cases)
+        for (const std::string& tile_name : valid_tiles)
         {
-            if (tab_pos.find(case_name) != tab_pos.end())
+            if (tab_pos.find(tile_name) != tab_pos.end())
             {
-                ImVec2 target_pos = tab_pos.at(case_name);
+                ImVec2 target_pos = tab_pos.at(tile_name);
 
                 ImGui::SetCursorPos(target_pos);
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.f, 0.f, 0.f, 1.f});
@@ -186,7 +139,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
                     current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
                     for (int i{0}; i < all_pieces.size(); i++)
                     {
-                        if (all_pieces[i].is_playable() && all_pieces[i].get_current_case() == case_name)
+                        if (all_pieces[i].is_playable() && all_pieces[i].get_current_tile() == tile_name)
                         {
                             all_pieces[i].m_is_playable = false;
 
@@ -198,12 +151,12 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
                             break;
                         }
                     }
-                    if (((m_is_white && case_name[1] == '8') || (!(m_is_white) && case_name[1] == '1')) && m_behaviour == Behaviour::Pawn)
+                    if (((m_is_white && tile_name[1] == '8') || (!(m_is_white) && tile_name[1] == '1')) && m_behaviour == Behaviour::Pawn)
                     {
                         to_be_promoted = true;
                     }
                     m_position     = target_pos;
-                    m_current_case = case_name;
+                    m_current_tile = tile_name;
                     is_white_turn  = !is_white_turn;
                 }
                 ImGui::PopStyleColor();
@@ -224,20 +177,8 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
 {
     std::vector<std::string> possible_moves;
 
-    char file = m_current_case[0];
-    int  rank = m_current_case[1] - '0';
-
-    auto get_piece_at = [&](char f, int r) -> const Piece* {
-        if (f < 'a' || f > 'h' || r < 1 || r > 8)
-            return nullptr; // Hors du plateau
-        std::string target = std::string(1, f) + std::to_string(r);
-        for (const auto& p : board_pieces)
-        {
-            if (p.get_current_case() == target && p.is_playable())
-                return &p;
-        }
-        return nullptr;
-    };
+    char file = m_current_tile[0];
+    int  rank = m_current_tile[1] - '0';
 
     auto add_sliding_moves = [&](int d_file, int d_rank) {
         for (int i = 1; i < 8; i++)
@@ -247,16 +188,12 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             if (f < 'a' || f > 'h' || r < 1 || r > 8)
                 break; // Sortie du plateau
 
-            const Piece* p      = get_piece_at(f, r);
+            const Piece* p      = get_piece_at(f, r, board_pieces);
             std::string  target = std::string(1, f) + std::to_string(r);
 
-            if (p == nullptr)
+            if (p == nullptr || (p->is_white() == m_is_white && !(p->is_playable())))
             {
-                possible_moves.push_back(target); // Case vide, on peut y aller
-            }
-            else if (p->is_white() == m_is_white && !(p->is_playable()))
-            {
-                possible_moves.push_back(target);
+                possible_moves.push_back(target); // tile vide, on peut y aller
             }
             else
             {
@@ -274,22 +211,22 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         int dir        = m_is_white ? 1 : -1; // Les blancs montent (+1), les noirs descendent (-1)
         int start_rank = m_is_white ? 2 : 7;
 
-        // Avancer d'une case
-        if (get_piece_at(file, rank + dir) == nullptr)
+        // Avancer d'une tile
+        if (get_piece_at(file, rank + dir, board_pieces) == nullptr)
         {
             possible_moves.push_back(std::string(1, file) + std::to_string(rank + dir));
-            // Avancer de deux cases (seulement si la première est vide et qu'on est sur le départ)
-            if (rank == start_rank && get_piece_at(file, rank + (dir * 2)) == nullptr)
+            // Avancer de deux tiles (seulement si la première est vide et qu'on est sur le départ)
+            if (rank == start_rank && get_piece_at(file, rank + (dir * 2), board_pieces) == nullptr)
             {
                 possible_moves.push_back(std::string(1, file) + std::to_string(rank + (dir * 2)));
             }
         }
         // Manger en diagonale
-        const Piece* diag_left = get_piece_at(file - 1, rank + dir);
+        const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
         if (diag_left != nullptr && diag_left->is_white() != m_is_white)
             possible_moves.push_back(std::string(1, file - 1) + std::to_string(rank + dir));
 
-        const Piece* diag_right = get_piece_at(file + 1, rank + dir);
+        const Piece* diag_right = get_piece_at(file + 1, rank + dir, board_pieces);
         if (diag_right != nullptr && diag_right->is_white() != m_is_white)
             possible_moves.push_back(std::string(1, file + 1) + std::to_string(rank + dir));
         break;
@@ -304,7 +241,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
-                const Piece* p = get_piece_at(f, r);
+                const Piece* p = get_piece_at(f, r, board_pieces);
                 if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
                     possible_moves.push_back(std::string(1, f) + std::to_string(r));
             }
@@ -342,7 +279,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
-                const Piece* p = get_piece_at(f, r);
+                const Piece* p = get_piece_at(f, r, board_pieces);
                 if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
                     possible_moves.push_back(std::string(1, f) + std::to_string(r));
             }
@@ -353,157 +290,15 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
     return possible_moves;
 }
 
-std::vector<Piece> pieces_gen(float tile_size)
+const Piece* Piece::get_piece_at(char f, int r, const std::vector<Piece>& board_pieces)
 {
-    std::vector<Piece> pieces;
-    for (int i{0}; i < 2; i++)
+    if (f < 'a' || f > 'h' || r < 1 || r > 8)
+        return nullptr; // Hors du plateau
+    std::string target = std::string(1, f) + std::to_string(r);
+    for (const auto& p : board_pieces)
     {
-        for (int j{0}; j < 16; j++)
-        {
-            Piece piece{};
-
-            std::string name{};
-            if (i == 0)
-            {
-                name.push_back('D'); // Dark aka Black
-                piece.set_current_case("7");
-                if (j > 7)
-                {
-                    piece.set_current_case("8");
-                }
-            }
-            else
-            {
-                name.push_back('W'); // White
-                piece.set_current_case("2");
-                if (j > 7)
-                {
-                    piece.set_current_case("1");
-                }
-            }
-
-            if (j < 8)
-            {
-                name.push_back('P'); // Pawn
-                name += std::to_string(j);
-
-                piece.set_current_case(std::string(1, static_cast<char>('a' + j)) + piece.get_current_case());
-                piece.set_behaviour(Behaviour::Pawn);
-            }
-            else if (j < 10)
-            {
-                name.push_back('R'); // Rook
-                name += std::to_string(j - 8);
-
-                if (j == 8)
-                {
-                    piece.set_current_case("a" + piece.get_current_case());
-                }
-                else
-                {
-                    piece.set_current_case("h" + piece.get_current_case());
-                }
-                piece.set_behaviour(Behaviour::Rook);
-            }
-            else if (j < 12)
-            {
-                name.push_back('H'); // Horse aka Knight
-                name += std::to_string(j - 10);
-
-                if (j == 10)
-                {
-                    piece.set_current_case("b" + piece.get_current_case());
-                }
-                else
-                {
-                    piece.set_current_case("g" + piece.get_current_case());
-                }
-                piece.set_behaviour(Behaviour::Knight);
-            }
-            else if (j < 14)
-            {
-                name.push_back('B'); // Bishop
-                name += std::to_string(j - 12);
-
-                if (j == 12)
-                {
-                    piece.set_current_case("c" + piece.get_current_case());
-                }
-                else
-                {
-                    piece.set_current_case("f" + piece.get_current_case());
-                }
-                piece.set_behaviour(Behaviour::Bishop);
-            }
-            else if (j == 14)
-            {
-                name.push_back('Q'); // Queen
-                piece.set_current_case("d" + piece.get_current_case());
-                piece.set_behaviour(Behaviour::Queen);
-            }
-            else
-            {
-                name.push_back('K'); // King
-                piece.set_current_case("e" + piece.get_current_case());
-                piece.set_behaviour(Behaviour::King);
-            }
-
-            piece.set_texture_id(give_texture_id(piece.get_behaviour(), i));
-
-            piece.set_name(name);
-            piece.set_color(static_cast<bool>(i));
-            piece.set_tile_size(tile_size);
-            pieces.push_back(piece);
-        }
+        if (p.get_current_tile() == target && p.is_playable())
+            return &p;
     }
-    return pieces;
-}
-
-void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos)
-{
-    for (int i{0}; i < pieces.size(); i++)
-    {
-        pieces[i].set_position(tab_pos[pieces[i].get_current_case()]);
-    }
-}
-
-unsigned int give_texture_id(Behaviour Piece_Behaviour, int i)
-{
-    // Fabrique le nom du fichier image
-    std::string file_path = "../../chess_pieces_images/";
-
-    switch (Piece_Behaviour)
-    {
-    case Behaviour::Pawn:
-        file_path += "pawn";
-        break;
-    case Behaviour::Rook:
-        file_path += "rook";
-        break;
-    case Behaviour::Knight:
-        file_path += "knight";
-        break;
-    case Behaviour::Bishop:
-        file_path += "bishop";
-        break;
-    case Behaviour::Queen:
-        file_path += "queen";
-        break;
-    case Behaviour::King:
-        file_path += "king";
-        break;
-    }
-
-    if (i == 0)
-    {
-        file_path += "_black.png"; // i==0 c'est les noirs
-    }
-    else
-    {
-        file_path += "_white.png";
-    }
-
-    // Charge la texture et la donne à la pièce
-    unsigned int tex_id = load_texture_from_file(file_path.c_str());
-    return tex_id;
-}
+    return nullptr;
+};

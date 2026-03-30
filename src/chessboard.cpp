@@ -4,9 +4,9 @@
 #include <map>
 #include <string>
 
-std::map<std::string, ImVec2> casePositions;
+std::map<std::string, ImVec2> tilePositions;
 
-void draw_board(float caseSize)
+void draw_board(float tileSize)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0)); // Pour supprimer le paddding des cases
 
@@ -25,18 +25,18 @@ void draw_board(float caseSize)
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.f));
             }
 
-            if (ImGui::Button(" ", ImVec2(caseSize, caseSize)))
+            if (ImGui::Button(" ", ImVec2(tileSize, tileSize)))
             {
                 // Position
                 char file = static_cast<char>('a' + col);
 
                 int rank = 8 - row;
 
-                std::string caseName = std::string(1, file) + std::to_string(rank);
-            
-                casePositions[caseName] = ImGui::GetCursorPos();
+                std::string tileName = std::string(1, file) + std::to_string(rank);
 
-                std::cout << "Case cliquée : " << caseName << "\n";
+                tilePositions[tileName] = ImGui::GetCursorPos();
+
+                std::cout << "Case cliquée : " << tileName << "\n";
             }
 
             ImGui::PopStyleColor();

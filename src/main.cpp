@@ -5,7 +5,7 @@
 #include "quick_imgui/quick_imgui.hpp"
 #include "utils.hpp"
 
-const float TILE_SIZE = 50.f;
+const float TILE_SIZE = 70.f;
 
 int main()
 {
@@ -27,7 +27,7 @@ int main()
                 assign_pos_pieces(pieces, TAB_POS); },
             .loop =
                 [&]() {
-                    ImGui::ShowDemoWindow();
+                    // ImGui::ShowDemoWindow();
 
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -45,37 +45,7 @@ int main()
                     {
                         promotion_screen(to_be_promoted, pieces);
 
-                        for (int i{0}; i < pieces.size(); i++)
-                        {
-                            ImGui::SetCursorPos(pieces[i].get_position());
-
-                            ImGui::PushID(i);
-
-                            if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS, to_be_promoted))
-                            {
-                                if (pieces[i].is_white() == game_state.is_white_turn)
-                                {
-                                    logger.AddLog("Selection : " + pieces[i].get_name());
-
-                                    current_piece    = {pieces[i].get_name(), PIECE_STATUS::SELECTED};
-                                    current_piece_id = i;
-                                }
-                                else
-                                {
-                                    logger.AddLog("[Erreur] Ce n'est pas votre tour !");
-                                }
-                            }
-                            ImGui::PopID();
-                        }
-                        // Put the selected piece in the first place in order to draw it first
-                        if (current_piece_id != 32 && pieces[0].get_name() != pieces[current_piece_id].get_name())
-                        {
-                            // problem with where pieces have been eaten in start position
-                            Piece temp{pieces[current_piece_id]};
-                            pieces[current_piece_id] = pieces[0];
-                            pieces[0]                = temp;
-                            current_piece_id         = 32;
-                        }
+                        draw_pieces(game_state, logger, to_be_promoted, pieces, TAB_POS, current_piece, current_piece_id);
                     }
                     ImGui::EndChild();
 

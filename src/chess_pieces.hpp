@@ -24,7 +24,7 @@ private:
     std::string  m_name;
     bool         m_is_white;
     bool         m_is_playable;
-    std::string  m_current_case;
+    std::string  m_current_tile;
     ImVec2       m_position;
     float        m_tile_size;
     Behaviour    m_behaviour;
@@ -42,7 +42,7 @@ public:
     // setters
     void set_name(std::string name);
     void set_color(bool is_white);
-    void set_current_case(std::string next_case);
+    void set_current_tile(std::string next_tile);
     void set_position(ImVec2 new_pos);
     void set_tile_size(float tile_size);
     void set_behaviour(Behaviour behaviour);
@@ -51,7 +51,7 @@ public:
 
     // getters
     std::string  get_name() const;
-    std::string  get_current_case() const;
+    std::string  get_current_tile() const;
     ImVec2       get_position() const;
     bool         is_white() const;
     bool         is_playable() const;
@@ -65,10 +65,5 @@ public:
     bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted);
 
     std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
+    const Piece*             get_piece_at(char f, int r, const std::vector<Piece>& board_pieces);
 };
-
-std::vector<Piece> pieces_gen(float tile_size);
-
-void assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos);
-
-unsigned int give_texture_id(Behaviour Piece_Behaviour, int i);
