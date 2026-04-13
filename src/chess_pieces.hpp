@@ -1,5 +1,6 @@
 #pragma once
 #include <imgui.h>
+#include <array>
 #include <map>
 #include <string>
 #include <utility>
@@ -31,15 +32,15 @@ private:
     unsigned int m_texture_id;
 
 public:
-    // constructor
+    // --- CONSTRUCTORS ---
     Piece();
     Piece(Piece const& piece) = default;
     Piece(std::string& name, bool is_white);
 
-    // destructor
+    // --- DESTRUCTOR ---
     ~Piece() = default;
 
-    // setters
+    // --- SETTERS ---
     void set_name(std::string name);
     void set_color(bool is_white);
     void set_current_tile(std::string next_tile);
@@ -49,7 +50,7 @@ public:
     void set_playability(bool state);
     void set_texture_id(unsigned int id);
 
-    // getters
+    // --- GETTERS ---
     std::string  get_name() const;
     std::string  get_current_tile() const;
     ImVec2       get_position() const;
@@ -58,10 +59,9 @@ public:
     unsigned int get_texture_id() const;
     Behaviour    get_behaviour() const;
 
-    // operators
+    // --- OPERATORS ---
 
-    // others
-    // bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_white_turn);
+    // --- OTHERS ---
     bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted);
 
     std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);

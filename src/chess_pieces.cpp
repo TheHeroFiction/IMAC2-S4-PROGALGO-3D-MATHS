@@ -1,19 +1,13 @@
 #include "chess_pieces.hpp"
-#include <string>
-#include <utility>
-#include <vector>
 
-const std::vector<Behaviour>   titles{Behaviour::Bishop, Behaviour::Knight, Behaviour::Rook, Behaviour::Queen};
-const std::vector<std::string> titles_names{"Bishop", "Knight", "Rook", "Queen"};
-
-// constructor
+// --- CONSTRUCTOR ---
 Piece::Piece()
     : m_name(""), m_is_white(false), m_is_playable(true) {}
 
 Piece::Piece(std::string& name, bool is_white)
     : m_name(name), m_is_white(is_white), m_is_playable(true) {}
 
-// setters
+// --- SETTERS ---
 void Piece::set_name(std::string name)
 {
     m_name = name;
@@ -54,7 +48,7 @@ void Piece::set_texture_id(unsigned int id)
     m_texture_id = id;
 }
 
-// getters
+// --- GETTERS ---
 std::string Piece::get_name() const
 {
     return m_name;
@@ -90,7 +84,7 @@ Behaviour Piece::get_behaviour() const
     return m_behaviour;
 }
 
-// others
+// --- OTHERS ---
 
 bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
 {
@@ -120,7 +114,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
 
     ImGui::PopStyleVar();
 
-    // --- DESSIN DES POSSIBILITÉS (CARRÉS ROUGES) ---
+    // --- DRAW POSSIBLE MOVES (RED SQUARES) ---
     if (current_piece.first == m_name && current_piece.second == PIECE_STATUS::SELECTED)
     {
         std::vector<std::string> valid_tiles               = get_possible_moves(all_pieces);
@@ -186,20 +180,20 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             char f = file + (d_file * i);
             int  r = rank + (d_rank * i);
             if (f < 'a' || f > 'h' || r < 1 || r > 8)
-                break; // Sortie du plateau
+                break; // --- OUT OF CHESSBOARD BOUNDS ---
 
             const Piece* p      = get_piece_at(f, r, board_pieces);
             std::string  target = std::string(1, f) + std::to_string(r);
 
             if (p == nullptr || (p->is_white() == m_is_white && !(p->is_playable())))
             {
-                possible_moves.push_back(target); // tile vide, on peut y aller
+                possible_moves.push_back(target); // --- EMPTY TILE CHECK ---
             }
             else
             {
                 if (p->is_white() != m_is_white)
-                    possible_moves.push_back(target); // Ennemi : on peut manger, mais on s'arrête
-                break;                                // Bloqué par une pièce (amie ou ennemie)
+                    possible_moves.push_back(target); // --- ENEMY CHECK ---
+                break;                                // --- OTHER PIECES ARE BLOCKING ---
             }
         }
     };
@@ -208,20 +202,20 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
     {
     case Behaviour::Pawn:
     {
-        int dir        = m_is_white ? 1 : -1; // Les blancs montent (+1), les noirs descendent (-1)
+        int dir        = m_is_white ? 1 : -1; // --- WHITE GOES UP BY 1 / BLACK GOES DOWN BY 1 ---
         int start_rank = m_is_white ? 2 : 7;
 
-        // Avancer d'une tile
+        // --- MOVE BY 1 TILE ---
         if (get_piece_at(file, rank + dir, board_pieces) == nullptr)
         {
             possible_moves.push_back(std::string(1, file) + std::to_string(rank + dir));
-            // Avancer de deux tiles (seulement si la première est vide et qu'on est sur le départ)
+            // --- MOVE BY 2 IF ON START POSITION ---
             if (rank == start_rank && get_piece_at(file, rank + (dir * 2), board_pieces) == nullptr)
             {
                 possible_moves.push_back(std::string(1, file) + std::to_string(rank + (dir * 2)));
             }
         }
-        // Manger en diagonale
+        // --- DIAGONAL DETETECTION ---
         const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
         if (diag_left != nullptr && diag_left->is_white() != m_is_white)
             possible_moves.push_back(std::string(1, file - 1) + std::to_string(rank + dir));
@@ -233,8 +227,16 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
     }
     case Behaviour::Knight:
     {
-        // Les 8 sauts en "L" du cavalier
-        int moves[8][2] = {{1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}};
+        std::array<std::array<int, 2>, 8> moves{
+            1, 2,
+            2, 1,
+            2, -1,
+            1, -2,
+            -1, -2,
+            -2, -1,
+            -2, 1,
+            -1, 2
+        };
         for (auto& m : moves)
         {
             char f = file + m[0];
@@ -272,7 +274,16 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         break;
     case Behaviour::King:
     {
-        int moves[8][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        std::array<std::array<int, 2>, 8> moves{
+            1, 0,
+            -1, 0,
+            0, 1,
+            0, -1,
+            1, 1,
+            1, -1,
+            -1, 1,
+            -1, -1
+        };
         for (auto& m : moves)
         {
             char f = file + m[0];
@@ -293,7 +304,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
 const Piece* Piece::get_piece_at(char f, int r, const std::vector<Piece>& board_pieces)
 {
     if (f < 'a' || f > 'h' || r < 1 || r > 8)
-        return nullptr; // Hors du plateau
+        return nullptr; // --- OUT OF CHESSBOARD BOUNDS ---
     std::string target = std::string(1, f) + std::to_string(r);
     for (const auto& p : board_pieces)
     {

@@ -12,7 +12,6 @@ std::map<std::string, ImVec2> generate_tab_position(float tile_size)
     {
         for (int y{0}; y < 8; y++)
         {
-            // Position
             char file = static_cast<char>('a' + x);
 
             int rank = 8 - y;
@@ -34,7 +33,7 @@ GLuint load_texture_from_file(const char* filename)
 
     if (image_data == nullptr)
     {
-        std::cout << "Erreur : Impossible de charger l'image " << filename << "\n";
+        std::cout << "Error : Image not found " << filename << "\n";
         return 0;
     }
 
@@ -42,7 +41,7 @@ GLuint load_texture_from_file(const char* filename)
     glGenTextures(1, &image_texture);
     glBindTexture(GL_TEXTURE_2D, image_texture);
 
-    // Paramètres pour redimensionner l'image proprement
+    // --- PARAMETERS TO SCALE IMAGE CORRECTLY ---
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

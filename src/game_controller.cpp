@@ -1,13 +1,15 @@
 #include "game_controller.hpp"
+#include <iostream>
+#include "renderer3D.hpp"
 #include "utils.hpp"
 
 std::vector<std::pair<std::string, Behaviour>> titles_for_promotions{{"Rook", Behaviour::Rook}, {"Knight", Behaviour::Knight}, {"Bishop", Behaviour::Bishop}, {"Queen", Behaviour::Queen}};
 
-void show_mode_selection(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, float TILE_SIZE, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, std::pair<std::string, PIECE_STATUS>& current_piece, int current_piece_id)
+void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, float TILE_SIZE, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, std::pair<std::string, PIECE_STATUS>& current_piece, int current_piece_id)
 {
     ImGui::SetCursorScreenPos(boardStartPos);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
-    ImGui::BeginChild("Mode Selection", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
+    ImGui::BeginChild("Menu", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false);
 
     ImGui::SetWindowFontScale(1.3f);
 
@@ -25,8 +27,8 @@ void show_mode_selection(ImVec2 boardStartPos, GameState& game_state, GameLogger
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.4f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.2f, 1.0f));
 
-    // Mode Normal (ou Restart)
-    std::string btn_label = game_state.is_finished ? "Rejouer Normal" : "Mode normal";
+    // --- DEFAULT (2D) GAME ---
+    std::string btn_label = game_state.is_finished ? "REPLAY 2D GAMEMODE" : "2D GAMEMODE";
     if (ImGui::Button(btn_label.c_str(), buttonSize))
     {
         game_state.in_menu       = false;
@@ -40,27 +42,28 @@ void show_mode_selection(ImVec2 boardStartPos, GameState& game_state, GameLogger
         current_piece_id = 32;
 
         logger.Clear();
-        logger.AddLog("C'est parti en mode normal !");
+        logger.AddLog("GAME START!");
     }
 
     ImGui::SetCursorPosX(x_offset);
     ImGui::Dummy(ImVec2(0.f, spacing));
     ImGui::SetCursorPosX(x_offset);
 
-    // Mode 3D
-    if (ImGui::Button("Mode 3D", buttonSize))
+    // --- 3D GAMEMODE ---
+    if (ImGui::Button("3D GAMEMODE", buttonSize))
     {
-        logger.AddLog("Le mode 3D sera bientôt disponible !");
+        // logger.AddLog("3D GAMEMODE AVAILABLE SOON!");
+        main_3D_window(TILE_SIZE * 8);
     }
 
     ImGui::SetCursorPosX(x_offset);
     ImGui::Dummy(ImVec2(0.f, spacing));
     ImGui::SetCursorPosX(x_offset);
 
-    // Mode Aléatoire
-    if (ImGui::Button("Mode aléatoire", buttonSize))
+    // --- RANDOM EVENTS GAMEMODE
+    if (ImGui::Button("RANDOM EVENTS GAMEMODE", buttonSize))
     {
-        logger.AddLog("Le mode aléatoire sera bientot disponible !");
+        logger.AddLog("RANDOM EVENTS GAMEMODE AVAILABLE SOON!");
     }
 
     ImGui::PopStyleColor(3);
@@ -76,7 +79,7 @@ void promotion_screen(bool& to_be_promoted, std::vector<Piece>& pieces)
     {
         ImGui::OpenPopup("Promote");
 
-        // Always center this window when appearing
+        // --- POPUP APPEAR IN CENTER OF SCREEN ---
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
@@ -120,15 +123,14 @@ void draw_pieces(GameState& game_state, GameLogger& logger, bool& to_be_promoted
             }
             else
             {
-                logger.AddLog("[Erreur] Ce n'est pas votre tour !");
+                logger.AddLog("[Error] IT'S NOT YOUR TURN !");
             }
         }
         ImGui::PopID();
     }
-    // Put the selected piece in the first place in order to draw it first
+    // --- PUT SELECTED PIECE AS FIRST TO BE DRAWN BY IMGUI ---
     if (current_piece_id != 32 && pieces[0].get_name() != pieces[current_piece_id].get_name())
     {
-        // problem with where pieces have been eaten in start position
         Piece temp{pieces[current_piece_id]};
         pieces[current_piece_id] = pieces[0];
         pieces[0]                = temp;
@@ -165,7 +167,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
 {
     if (color == 0)
     {
-        name.push_back('D'); // Dark aka Black
+        name.push_back('D'); // --- DARK AKA BLACK ---
         piece.set_current_tile("7");
         if (j > 7)
         {
@@ -174,7 +176,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
     }
     else
     {
-        name.push_back('W'); // White
+        name.push_back('W'); // --- WHITE ---
         piece.set_current_tile("2");
         if (j > 7)
         {
@@ -184,7 +186,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
 
     if (j < 8)
     {
-        name.push_back('P'); // Pawn
+        name.push_back('P'); // --- PAWN ---
         name += std::to_string(j);
 
         piece.set_current_tile(std::string(1, static_cast<char>('a' + j)) + piece.get_current_tile());
@@ -192,7 +194,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
     }
     else if (j < 10)
     {
-        name.push_back('R'); // Rook
+        name.push_back('R'); // --- ROOK ---
         name += std::to_string(j - 8);
 
         if (j == 8)
@@ -207,7 +209,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
     }
     else if (j < 12)
     {
-        name.push_back('H'); // Horse aka Knight
+        name.push_back('H'); // --- HORSE AKA KNIGHT ---
         name += std::to_string(j - 10);
 
         if (j == 10)
@@ -222,7 +224,7 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
     }
     else if (j < 14)
     {
-        name.push_back('B'); // Bishop
+        name.push_back('B'); // --- BISHOP ---
         name += std::to_string(j - 12);
 
         if (j == 12)
@@ -237,13 +239,13 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
     }
     else if (j == 14)
     {
-        name.push_back('Q'); // Queen
+        name.push_back('Q'); // --- QUEEN ---
         piece.set_current_tile("d" + piece.get_current_tile());
         piece.set_behaviour(Behaviour::Queen);
     }
     else
     {
-        name.push_back('K'); // King
+        name.push_back('K'); // --- KING ---
         piece.set_current_tile("e" + piece.get_current_tile());
         piece.set_behaviour(Behaviour::King);
     }
@@ -256,7 +258,6 @@ void config_piece(int color, int j, Piece& piece, std::string& name, float tile_
 
 unsigned int give_texture_id(Behaviour Piece_Behaviour, int i)
 {
-    // Fabrique le nom du fichier image
     std::string file_path = "../../chess_pieces_images/";
 
     switch (Piece_Behaviour)
@@ -283,14 +284,13 @@ unsigned int give_texture_id(Behaviour Piece_Behaviour, int i)
 
     if (i == 0)
     {
-        file_path += "_black.png"; // i==0 c'est les noirs
+        file_path += "_black.png";
     }
     else
     {
         file_path += "_white.png";
     }
 
-    // Charge la texture et la donne à la pièce
     unsigned int tex_id = load_texture_from_file(file_path.c_str());
     return tex_id;
 }

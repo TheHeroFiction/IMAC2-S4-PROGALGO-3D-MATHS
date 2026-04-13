@@ -31,10 +31,10 @@ int main()
 
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-                    // --- Header ---
+                    // --- HEADER ---
                     game_state.game_header();
 
-                    // --- Le Plateau et les Pièces ---
+                    // --- CHESSBOARD & PIECES ---
                     ImVec2 boardStartPos = ImGui::GetCursorScreenPos();
 
                     draw_board(TILE_SIZE);
@@ -51,7 +51,7 @@ int main()
 
                     if (game_state.in_menu || game_state.is_finished)
                     {
-                        show_mode_selection(boardStartPos, game_state, logger, TILE_SIZE, pieces, TAB_POS, current_piece, current_piece_id);
+                        game_menu(boardStartPos, game_state, logger, TILE_SIZE, pieces, TAB_POS, current_piece, current_piece_id);
                     }
 
                     // --- Logs ---

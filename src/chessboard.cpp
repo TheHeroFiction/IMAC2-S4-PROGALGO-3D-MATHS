@@ -8,7 +8,7 @@ std::map<std::string, ImVec2> tilePositions;
 
 void draw_board(float tileSize)
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0)); // Pour supprimer le paddding des cases
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0)); // --- DELETE TILE PADDING ---
 
     for (int row = 0; row < 8; row++)
     {
