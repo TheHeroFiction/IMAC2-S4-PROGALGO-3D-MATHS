@@ -13,7 +13,7 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
 
     ImGui::SetWindowFontScale(1.3f);
 
-    ImVec2 buttonSize(200.f, 50.f);
+    ImVec2 buttonSize(330.f, 50.f);
     float  spacing = 15.f;
 
     float total_height = (buttonSize.y * 3) + (spacing * 2);
@@ -28,12 +28,14 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.2f, 1.0f));
 
     // --- DEFAULT (2D) GAME ---
-    std::string btn_label = game_state.is_finished ? "REPLAY 2D GAMEMODE" : "2D GAMEMODE";
+    std::string btn_label = (game_state.is_finished && !game_state.is_wonderland_mode) ? "REPLAY 2D GAMEMODE" : "2D GAMEMODE";
     if (ImGui::Button(btn_label.c_str(), buttonSize))
     {
-        game_state.in_menu       = false;
-        game_state.is_finished   = false;
-        game_state.is_white_turn = true;
+        game_state.in_menu            = false;
+        game_state.is_finished        = false;
+        game_state.is_white_turn      = true;
+        game_state.is_wonderland_mode = false;
+        game_state.trigger_echo(WonderlandLore::Event::NONE);
 
         pieces = pieces_gen(TILE_SIZE);
         assign_pos_pieces(pieces, TAB_POS);
@@ -61,9 +63,12 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
     ImGui::SetCursorPosX(x_offset);
 
     // --- RANDOM EVENTS GAMEMODE
-    if (ImGui::Button("RANDOM EVENTS GAMEMODE", buttonSize))
+    std::string random_btn_label = (game_state.is_finished && game_state.is_wonderland_mode) ? "REPLAY RANDOM EVENTS GAMEMODE" : "RANDOM EVENTS GAMEMODE";
+    if (ImGui::Button(random_btn_label.c_str(), buttonSize))
     {
-        logger.AddLog("RANDOM EVENTS GAMEMODE AVAILABLE SOON!");
+        start_wonderland_mode(game_state, pieces, TAB_POS, logger, TILE_SIZE);
+        current_piece    = std::pair("", PIECE_STATUS::UNSELECTED);
+        current_piece_id = 32;
     }
 
     ImGui::PopStyleColor(3);
@@ -72,6 +77,39 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
     ImGui::EndChild();
     ImGui::PopStyleColor();
 };
+
+void start_wonderland_mode(GameState& game_state, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, GameLogger& logger, float tile_size)
+{
+    game_state.in_menu            = false;
+    game_state.is_finished        = false;
+    game_state.is_white_turn      = true;
+    game_state.is_wonderland_mode = true;
+
+    pieces = pieces_gen(tile_size);
+
+    // Law 1: Random Permutation (Fisher-Yates) - Mad Hatter's Tea Party
+    std::vector<int> shuffle_indices = game_state.alice_engine.get_permutation(8);
+
+    for (int color = 0; color < 2; ++color)
+    {
+        int                offset = color * 16 + 8; // Major pieces are at indices 8-15 and 24-31
+        std::vector<Piece> original_back_rank(pieces.begin() + offset, pieces.begin() + offset + 8);
+
+        for (int i = 0; i < 8; ++i)
+        {
+            pieces[offset + i]   = original_back_rank[shuffle_indices[i]];
+            char        new_file = static_cast<char>('a' + i);
+            std::string new_tile = std::string(1, new_file) + (color == 0 ? "8" : "1");
+            pieces[offset + i].set_current_tile(new_tile);
+        }
+    }
+
+    assign_pos_pieces(pieces, TAB_POS);
+
+    logger.Clear();
+    logger.AddLog("Down the rabbit hole... Welcome to Wonderland!");
+    game_state.trigger_echo(WonderlandLore::Event::MAD_HATTER);
+}
 
 void promotion_screen(bool& to_be_promoted, std::vector<Piece>& pieces)
 {
@@ -112,7 +150,7 @@ void draw_pieces(GameState& game_state, GameLogger& logger, bool& to_be_promoted
 
         ImGui::PushID(i);
 
-        if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state.is_finished, game_state.is_white_turn, pieces, TAB_POS, to_be_promoted))
+        if (pieces[i].is_playable() && pieces[i].show_piece(current_piece, game_state, pieces, TAB_POS, to_be_promoted))
         {
             if (pieces[i].is_white() == game_state.is_white_turn)
             {

@@ -48,6 +48,11 @@ void Piece::set_texture_id(unsigned int id)
     m_texture_id = id;
 }
 
+void Piece::set_magic_scale(float scale)
+{
+    m_magic_scale = scale;
+}
+
 // --- GETTERS ---
 std::string Piece::get_name() const
 {
@@ -84,27 +89,46 @@ Behaviour Piece::get_behaviour() const
     return m_behaviour;
 }
 
-// --- OTHERS ---
-
-bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool& is_game_finished, bool& is_white_turn, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
+float Piece::get_magic_scale() const
 {
-    bool clicked = false;
+    return m_magic_scale;
+}
 
+// --- OTHERS ---
+bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, GameState& game_state, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
+{
+    bool   clicked          = false;
     ImVec2 piece_screen_pos = ImGui::GetCursorScreenPos();
+    ImVec2 board_origin     = ImVec2(piece_screen_pos.x - m_position.x, piece_screen_pos.y - m_position.y);
 
-    ImVec2 board_origin = ImVec2(piece_screen_pos.x - m_position.x, piece_screen_pos.y - m_position.y);
+    // --- WONDERLAND VISUAL LAWS ---
+
+    float  current_tile_size = m_tile_size * m_magic_scale;
+    ImVec2 render_offset(0.f, 0.f);
+
+    if (game_state.is_wonderland_mode)
+    {
+        // Law 6: Normal Distribution (The White Rabbit - Anxiety jitter)
+        if (game_state.current_event == WonderlandLore::Event::WHITE_RABBIT)
+        {
+            render_offset.x = game_state.alice_engine.get_normal(0.0f, 2.5f);
+            render_offset.y = game_state.alice_engine.get_normal(0.0f, 2.5f);
+        }
+    }
+    // ------------------------------
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+    ImGui::SetCursorPos(ImVec2(m_position.x + render_offset.x, m_position.y + render_offset.y));
 
     if (ImGui::ImageButton(
             m_name.c_str(),
-            (void*)(intptr_t)m_texture_id, // Cast (void*)(intptr_t) obligatoire pour ImGui, c'est comme ça qu'il lit les IDs de texture OpenGL.
-            ImVec2(m_tile_size, m_tile_size),
-            ImVec2(0, 0), ImVec2(1, 1), // Coordonnées UV (on prend toute l'image)
-            ImVec4(0, 0, 0, 0),         // Background (transparent)
-            ImVec4(1, 1, 1, 1)          // Teinte (blanche par défaut pour ne pas altérer l'image)
+            (void*)(intptr_t)m_texture_id,
+            ImVec2(current_tile_size, current_tile_size),
+            ImVec2(0, 0), ImVec2(1, 1),
+            ImVec4(0, 0, 0, 0),
+            ImVec4(1, 1, 1, 1)
         ))
     {
         clicked = true;
@@ -139,7 +163,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
 
                             if (all_pieces[i].get_name() == "WK" || all_pieces[i].get_name() == "DK")
                             {
-                                is_game_finished = true;
+                                game_state.is_finished = true;
                             }
 
                             break;
@@ -151,7 +175,24 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, bool
                     }
                     m_position     = target_pos;
                     m_current_tile = tile_name;
-                    is_white_turn  = !is_white_turn;
+
+                    game_state.end_turn();
+
+                    if (game_state.current_event == WonderlandLore::Event::MAGIC_MUSHROOM)
+                    {
+                        for (auto& p : all_pieces)
+                        {
+                            float scale = 0.5f + game_state.alice_engine.get_beta(2.0f, 2.0f);
+                            p.set_magic_scale(scale);
+                        }
+                    }
+                    else
+                    {
+                        for (auto& p : all_pieces)
+                        {
+                            p.set_magic_scale(1.0f);
+                        }
+                    }
                 }
                 ImGui::PopStyleColor();
             }

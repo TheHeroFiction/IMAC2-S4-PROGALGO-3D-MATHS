@@ -57,6 +57,30 @@ int main()
                     // --- Logs ---
                     logger.Draw(120.f);
 
+                    // --- WINDOW: ECHOES OF WONDERLAND ---
+                    if (game_state.is_wonderland_mode && game_state.current_event != WonderlandLore::Event::NONE)
+                    {
+                        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 320, 20), ImGuiCond_FirstUseEver);
+                        ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Always);
+
+                        ImGui::Begin("Echoes of Wonderland", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.3f, 1.0f));
+                        ImGui::TextWrapped("%s", game_state.current_quote.source.c_str());
+                        ImGui::PopStyleColor();
+                        ImGui::Separator();
+
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 0.8f, 0.8f, 1.0f));
+                        ImGui::TextWrapped("%s", game_state.current_quote.text.c_str());
+                        ImGui::PopStyleColor();
+
+                        ImGui::Separator();
+                        ImGui::TextWrapped("Explanation:");
+                        ImGui::TextWrapped("%s", game_state.current_quote.explanation.c_str());
+
+                        ImGui::End();
+                    }
+
                     ImGui::End();
                 },
         }

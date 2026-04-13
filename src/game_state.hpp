@@ -1,15 +1,50 @@
 #pragma once
 #include <imgui.h>
 #include <string>
+#include "wonderland_lore.hpp"
+#include "wonderland_math.hpp"
 
 struct GameState {
     bool is_white_turn = true;
     bool is_finished   = false;
     bool in_menu       = true;
 
+    // --- WONDERLAND MODE ---
+    bool             is_wonderland_mode = false;
+    WonderlandEngine alice_engine;
+
+    // Echoes of Wonderland
+    WonderlandLore::Event current_event = WonderlandLore::Event::NONE;
+    WonderlandLore::Quote current_quote;
+
+    void trigger_echo(WonderlandLore::Event event)
+    {
+        current_event = event;
+        current_quote = WonderlandLore::get_quote(event);
+    }
+    // -----------------------
+
     void end_turn()
     {
         is_white_turn = !is_white_turn;
+
+        if (is_wonderland_mode)
+        {
+            float roll = alice_engine.get_uniform();
+
+            if (roll < 0.33f)
+            {
+                trigger_echo(WonderlandLore::Event::MAGIC_MUSHROOM);
+            }
+            else if (roll < 0.66f)
+            {
+                trigger_echo(WonderlandLore::Event::WHITE_RABBIT);
+            }
+            else
+            {
+                trigger_echo(WonderlandLore::Event::NONE);
+            }
+        }
     }
 
     // --- NAME THE CURRENT PLAYER IN HEADER ---
