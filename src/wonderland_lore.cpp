@@ -1,10 +1,3 @@
-/* =====================================================================
- * WONDERLAND ENGINE
- * Math & Probability Generation
- * Note: This module was structured with the assistance of an AI
- * to correctly implement the probability distributions required.
- * ===================================================================== */
-
 #include "wonderland_lore.hpp"
 
 namespace WonderlandLore {
@@ -52,7 +45,7 @@ Quote get_quote(Event event)
         return {
             .source      = "Alice's Adventures in Wonderland, Chapter 8 (\"The Queen's Croquet-Ground\")",
             .text        = "\"Look out now, Five! Don't go splashing paint over me like that!\"",
-            .explanation = "The Card Gardeners: A magical brush strikes the board. The number of pawns affected by paint follows a Binomial distribution."
+            .explanation = "The Card Gardeners: A magical brush strikes the board. The number of pieces affected by paint follows a Binomial distribution."
         };
 
     case Event::ENDLESS_FALL:
@@ -66,7 +59,7 @@ Quote get_quote(Event event)
         return {
             .source      = "Through the Looking-Glass, Chapter 2 (\"The Garden of Live Flowers\")",
             .text        = "\"It's a great huge game of chess that's being played-all over the world!\"",
-            .explanation = "The Looking Glass: Space bends. Rarely, a move experiences an extreme drift to another tile, driven by the heavy tails of the Cauchy distribution."
+            .explanation = "The Looking Glass: Space bends. Sometimes, a move experiences an extreme drift to another tile, driven by the heavy tails of the Cauchy distribution."
         };
 
     default:

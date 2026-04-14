@@ -1,4 +1,5 @@
 #include "chess_pieces.hpp"
+#include "game_controller.hpp"
 
 // --- CONSTRUCTOR ---
 Piece::Piece()
@@ -53,6 +54,11 @@ void Piece::set_magic_scale(float scale)
     m_magic_scale = scale;
 }
 
+void Piece::set_painted_red(bool state)
+{
+    m_is_painted_red = state;
+}
+
 // --- GETTERS ---
 std::string Piece::get_name() const
 {
@@ -94,6 +100,11 @@ float Piece::get_magic_scale() const
     return m_magic_scale;
 }
 
+bool Piece::is_painted_red() const
+{
+    return m_is_painted_red;
+}
+
 // --- OTHERS ---
 bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, GameState& game_state, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted)
 {
@@ -102,14 +113,13 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
     ImVec2 board_origin     = ImVec2(piece_screen_pos.x - m_position.x, piece_screen_pos.y - m_position.y);
 
     // --- WONDERLAND VISUAL LAWS ---
-
     float  current_tile_size = m_tile_size * m_magic_scale;
     ImVec2 render_offset(0.f, 0.f);
 
     if (game_state.is_wonderland_mode)
     {
         // Law 6: Normal Distribution (The White Rabbit - Anxiety jitter)
-        if (game_state.current_event == WonderlandLore::Event::WHITE_RABBIT)
+        if (game_state.current_weather == WonderlandLore::Event::WHITE_RABBIT)
         {
             render_offset.x = game_state.alice_engine.get_normal(0.0f, 2.5f);
             render_offset.y = game_state.alice_engine.get_normal(0.0f, 2.5f);
@@ -122,16 +132,45 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
     ImGui::SetCursorPos(ImVec2(m_position.x + render_offset.x, m_position.y + render_offset.y));
 
+    // --- [BEGIN AI-GENERATED] WONDERLAND MATH EFFECTS ---
+
+    // --- DRAW PIECE BUTTON ---
+    ImVec4 tint_color = m_is_painted_red ? ImVec4(1.0f, 0.2f, 0.2f, 1.0f) : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    bool is_correct_turn = (m_is_white == game_state.is_white_turn);
+    bool has_moves       = !get_possible_moves(all_pieces, game_state).empty();
+
     if (ImGui::ImageButton(
             m_name.c_str(),
             (void*)(intptr_t)m_texture_id,
             ImVec2(current_tile_size, current_tile_size),
             ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(0, 0, 0, 0),
-            ImVec4(1, 1, 1, 1)
+            tint_color
         ))
     {
-        clicked = true;
+        bool is_correct_turn = (m_is_white == game_state.is_white_turn);
+
+        bool has_moves = !get_possible_moves(all_pieces, game_state).empty();
+
+        if (game_state.is_wonderland_mode && is_correct_turn && has_moves)
+        {
+            if (m_stubbornness > 0)
+            {
+                m_stubbornness--;
+                game_state.trigger_echo(WonderlandLore::Event::RED_QUEEN);
+            }
+            else
+            {
+                clicked        = true;
+                m_stubbornness = game_state.alice_engine.get_geometric(0.4f);
+            }
+        }
+        else
+        {
+            clicked = true;
+        }
+        // --- [END AI-GENERATED] ---
     }
 
     ImGui::PopStyleColor(1);
@@ -141,7 +180,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
     // --- DRAW POSSIBLE MOVES (RED SQUARES) ---
     if (current_piece.first == m_name && current_piece.second == PIECE_STATUS::SELECTED)
     {
-        std::vector<std::string> valid_tiles               = get_possible_moves(all_pieces);
+        std::vector<std::string> valid_tiles               = get_possible_moves(all_pieces, game_state);
         std::string              label_for_multiple_pieces = "";
 
         for (const std::string& tile_name : valid_tiles)
@@ -152,46 +191,77 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
                 ImGui::SetCursorPos(target_pos);
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.f, 0.f, 0.f, 1.f});
+
                 if (ImGui::Button(label_for_multiple_pieces.c_str(), ImVec2(m_tile_size, m_tile_size)))
                 {
                     current_piece = std::pair("", PIECE_STATUS::UNSELECTED);
+
+                    // --- [BEGIN AI-GENERATED] CAUCHY LAW (THE LOOKING GLASS) ---
+                    std::string final_tile   = tile_name;
+                    bool        has_glitched = false;
+
+                    if (game_state.is_wonderland_mode)
+                    {
+                        int dx = static_cast<int>(std::round(game_state.alice_engine.get_cauchy(0.0f, 0.15f)));
+                        int dy = static_cast<int>(std::round(game_state.alice_engine.get_cauchy(0.0f, 0.15f)));
+
+                        if (dx != 0 || dy != 0)
+                        {
+                            char target_file = tile_name[0];
+                            int  target_rank = tile_name[1] - '0';
+
+                            char new_file = std::max('a', std::min('h', static_cast<char>(target_file + dx)));
+                            int  new_rank = std::max(1, std::min(8, target_rank + dy));
+
+                            std::string glitched_tile = std::string(1, new_file) + std::to_string(new_rank);
+
+                            bool ally_blocking = false;
+                            for (const auto& p : all_pieces)
+                            {
+                                if (p.is_playable() && p.get_current_tile() == glitched_tile && p.is_white() == m_is_white)
+                                {
+                                    ally_blocking = true;
+                                    break;
+                                }
+                            }
+
+                            if (!ally_blocking)
+                            {
+                                final_tile   = glitched_tile;
+                                has_glitched = true;
+                            }
+                        }
+                    }
+
                     for (int i{0}; i < all_pieces.size(); i++)
                     {
-                        if (all_pieces[i].is_playable() && all_pieces[i].get_current_tile() == tile_name)
+                        if (all_pieces[i].is_playable() && all_pieces[i].get_current_tile() == final_tile)
                         {
-                            all_pieces[i].m_is_playable = false;
+                            all_pieces[i].set_playability(false);
 
                             if (all_pieces[i].get_name() == "WK" || all_pieces[i].get_name() == "DK")
                             {
                                 game_state.is_finished = true;
                             }
-
                             break;
                         }
                     }
-                    if (((m_is_white && tile_name[1] == '8') || (!(m_is_white) && tile_name[1] == '1')) && m_behaviour == Behaviour::Pawn)
+
+                    if (((m_is_white && final_tile[1] == '8') || (!(m_is_white) && final_tile[1] == '1')) && m_behaviour == Behaviour::Pawn)
                     {
                         to_be_promoted = true;
                     }
-                    m_position     = target_pos;
-                    m_current_tile = tile_name;
+
+                    m_position     = tab_pos.at(final_tile);
+                    m_current_tile = final_tile;
 
                     game_state.end_turn();
 
-                    if (game_state.current_event == WonderlandLore::Event::MAGIC_MUSHROOM)
+                    apply_weather_effects(game_state, all_pieces);
+
+                    if (has_glitched)
                     {
-                        for (auto& p : all_pieces)
-                        {
-                            float scale = 0.5f + game_state.alice_engine.get_beta(2.0f, 2.0f);
-                            p.set_magic_scale(scale);
-                        }
-                    }
-                    else
-                    {
-                        for (auto& p : all_pieces)
-                        {
-                            p.set_magic_scale(1.0f);
-                        }
+                        game_state.trigger_echo(WonderlandLore::Event::LOOKING_GLASS);
                     }
                 }
                 ImGui::PopStyleColor();
@@ -208,12 +278,16 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
     return clicked;
 }
 
-std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& board_pieces)
+std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& board_pieces, const GameState& game_state)
 {
     std::vector<std::string> possible_moves;
 
     char file = m_current_tile[0];
     int  rank = m_current_tile[1] - '0';
+
+    auto is_trapped = [&](const std::string& target) {
+        return std::find(game_state.trapped_tiles.begin(), game_state.trapped_tiles.end(), target) != game_state.trapped_tiles.end();
+    };
 
     auto add_sliding_moves = [&](int d_file, int d_rank) {
         for (int i = 1; i < 8; i++)
@@ -225,6 +299,8 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
 
             const Piece* p      = get_piece_at(f, r, board_pieces);
             std::string  target = std::string(1, f) + std::to_string(r);
+
+            if (is_trapped(target)) break;
 
             if (p == nullptr || (p->is_white() == m_is_white && !(p->is_playable())))
             {
@@ -247,23 +323,33 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         int start_rank = m_is_white ? 2 : 7;
 
         // --- MOVE BY 1 TILE ---
-        if (get_piece_at(file, rank + dir, board_pieces) == nullptr)
+        std::string move1_target = std::string(1, file) + std::to_string(rank + dir);
+        if (!is_trapped(move1_target) && get_piece_at(file, rank + dir, board_pieces) == nullptr)
         {
-            possible_moves.push_back(std::string(1, file) + std::to_string(rank + dir));
+            possible_moves.push_back(move1_target);
             // --- MOVE BY 2 IF ON START POSITION ---
-            if (rank == start_rank && get_piece_at(file, rank + (dir * 2), board_pieces) == nullptr)
+            std::string move2_target = std::string(1, file) + std::to_string(rank + (dir * 2));
+            if (rank == start_rank && !is_trapped(move2_target) && get_piece_at(file, rank + (dir * 2), board_pieces) == nullptr)
             {
-                possible_moves.push_back(std::string(1, file) + std::to_string(rank + (dir * 2)));
+                possible_moves.push_back(move2_target);
             }
         }
         // --- DIAGONAL DETETECTION ---
-        const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
-        if (diag_left != nullptr && diag_left->is_white() != m_is_white)
-            possible_moves.push_back(std::string(1, file - 1) + std::to_string(rank + dir));
+        std::string diag_left_target = std::string(1, file - 1) + std::to_string(rank + dir);
+        if (!is_trapped(diag_left_target)) 
+        {
+            const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
+            if (diag_left != nullptr && diag_left->is_white() != m_is_white)
+                possible_moves.push_back(diag_left_target);
+        }
 
-        const Piece* diag_right = get_piece_at(file + 1, rank + dir, board_pieces);
-        if (diag_right != nullptr && diag_right->is_white() != m_is_white)
-            possible_moves.push_back(std::string(1, file + 1) + std::to_string(rank + dir));
+        std::string diag_right_target = std::string(1, file + 1) + std::to_string(rank + dir);
+        if (!is_trapped(diag_right_target)) 
+        {
+            const Piece* diag_right = get_piece_at(file + 1, rank + dir, board_pieces);
+            if (diag_right != nullptr && diag_right->is_white() != m_is_white)
+                possible_moves.push_back(diag_right_target);
+        }
         break;
     }
     case Behaviour::Knight:
@@ -284,9 +370,15 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
+                std::string target = std::string(1, f) + std::to_string(r);
+                
+                // --- [BEGIN AI-GENERATED] CHESHIRE CAT TRAP ---
+                if (is_trapped(target)) continue;
+                // --- [END AI-GENERATED] ---
+
                 const Piece* p = get_piece_at(f, r, board_pieces);
                 if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
-                    possible_moves.push_back(std::string(1, f) + std::to_string(r));
+                    possible_moves.push_back(target);
             }
         }
         break;
@@ -331,9 +423,15 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
+                std::string target = std::string(1, f) + std::to_string(r);
+                
+                // --- [BEGIN AI-GENERATED] CHESHIRE CAT TRAP ---
+                if (is_trapped(target)) continue;
+                // --- [END AI-GENERATED] ---
+
                 const Piece* p = get_piece_at(f, r, board_pieces);
                 if (p == nullptr || p->is_white() != m_is_white || (p->is_white() == m_is_white && !(p->is_playable())))
-                    possible_moves.push_back(std::string(1, f) + std::to_string(r));
+                    possible_moves.push_back(target);
             }
         }
         break;

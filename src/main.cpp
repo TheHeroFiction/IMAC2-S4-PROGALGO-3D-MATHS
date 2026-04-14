@@ -39,6 +39,24 @@ int main()
 
                     draw_board(TILE_SIZE);
 
+                    // --- [BEGIN AI-GENERATED] DRAW CHESHIRE TRAPS ---
+                    if (game_state.is_wonderland_mode && !game_state.trapped_tiles.empty()) 
+                    {
+                        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                        for (const std::string& trap_tile : game_state.trapped_tiles) 
+                        {
+                            if (TAB_POS.find(trap_tile) != TAB_POS.end())
+                            {
+                                ImVec2 pos = TAB_POS.at(trap_tile);
+
+                                ImVec2 p_min = ImVec2(boardStartPos.x + pos.x, boardStartPos.y + pos.y);
+                                ImVec2 p_max = ImVec2(p_min.x + TILE_SIZE, p_min.y + TILE_SIZE);
+                                draw_list->AddRectFilled(p_min, p_max, IM_COL32(150, 50, 200, 255));
+                            }
+                        }
+                    }
+                    // --- [END AI-GENERATED] ---
+
                     ImGui::SetCursorScreenPos(boardStartPos);
 
                     ImGui::BeginChild("PiecesLayer", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false, ImGuiWindowFlags_NoBackground);
@@ -57,8 +75,28 @@ int main()
                     // --- Logs ---
                     logger.Draw(120.f);
 
+                    // --- [BEGIN AI-GENERATED] ENDLESS FALL TICK ---
+                    if (game_state.is_wonderland_mode && !game_state.is_finished && !game_state.in_menu) 
+                    {
+                        game_state.turn_timer += ImGui::GetIO().DeltaTime;
+
+                        if (game_state.turn_timer >= game_state.current_time_limit) 
+                        {
+                            logger.AddLog("[Endless Fall] Time's up! Turn skipped.");
+                            current_piece = {"", PIECE_STATUS::UNSELECTED};
+                            current_piece_id = 32;
+
+                            game_state.end_turn();
+
+                            apply_weather_effects(game_state, pieces);
+
+                            game_state.trigger_echo(WonderlandLore::Event::ENDLESS_FALL);
+                        }
+                    }
+                    // --- [END AI-GENERATED] ---
+
                     // --- WINDOW: ECHOES OF WONDERLAND ---
-                    if (game_state.is_wonderland_mode && game_state.current_event != WonderlandLore::Event::NONE)
+                    if (game_state.is_wonderland_mode && game_state.current_echo != WonderlandLore::Event::NONE)
                     {
                         ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 320, 20), ImGuiCond_FirstUseEver);
                         ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Always);

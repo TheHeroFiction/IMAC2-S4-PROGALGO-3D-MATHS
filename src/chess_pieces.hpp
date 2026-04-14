@@ -32,6 +32,8 @@ private:
     Behaviour    m_behaviour;
     unsigned int m_texture_id;
     float        m_magic_scale = 1.0f;
+    int          m_stubbornness = 0;
+    bool         m_is_painted_red = false;
 
 public:
     // --- CONSTRUCTORS ---
@@ -52,6 +54,7 @@ public:
     void set_playability(bool state);
     void set_texture_id(unsigned int id);
     void set_magic_scale(float scale);
+    void set_painted_red(bool state);
 
     // --- GETTERS ---
     std::string  get_name() const;
@@ -61,13 +64,14 @@ public:
     bool         is_playable() const;
     unsigned int get_texture_id() const;
     Behaviour    get_behaviour() const;
-    float get_magic_scale() const;
+    float        get_magic_scale() const;
+    bool         is_painted_red() const;
 
     // --- OPERATORS ---
 
     // --- OTHERS ---
     bool show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, GameState& game_state, std::vector<Piece>& all_pieces, const std::map<std::string, ImVec2>& tab_pos, bool& to_be_promoted);
 
-    std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces);
+    std::vector<std::string> get_possible_moves(const std::vector<Piece>& board_pieces, const GameState& game_state);
     const Piece*             get_piece_at(char f, int r, const std::vector<Piece>& board_pieces);
 };
