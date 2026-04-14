@@ -11,4 +11,3 @@ std::vector<Piece> pieces_gen(float tile_size);
 void               assign_pos_pieces(std::vector<Piece>& pieces, std::map<std::string, ImVec2> tab_pos);
 void               config_piece(int color, int j, Piece& piece, std::string& name, float tile_size);
 unsigned int       give_texture_id(Behaviour Piece_Behaviour, int i);
-void               apply_weather_effects(GameState& game_state, std::vector<Piece>& all_pieces);

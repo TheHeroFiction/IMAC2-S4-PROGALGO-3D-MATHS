@@ -1,5 +1,5 @@
 #include "chess_pieces.hpp"
-#include "game_controller.hpp"
+#include "wonderland_effects.hpp"
 
 // --- CONSTRUCTOR ---
 Piece::Piece()
@@ -118,7 +118,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
     if (game_state.is_wonderland_mode)
     {
-        // Law 6: Normal Distribution (The White Rabbit - Anxiety jitter)
+        // --- WHITE RABBIT (NORMAL LAW) ---
         if (game_state.current_weather == WonderlandLore::Event::WHITE_RABBIT)
         {
             render_offset.x = game_state.alice_engine.get_normal(0.0f, 2.5f);
@@ -155,6 +155,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
         if (game_state.is_wonderland_mode && is_correct_turn && has_moves)
         {
+            // --- RED QUEEN (GEOMETRIC LAW) ---
             if (m_stubbornness > 0)
             {
                 m_stubbornness--;
@@ -300,7 +301,8 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             const Piece* p      = get_piece_at(f, r, board_pieces);
             std::string  target = std::string(1, f) + std::to_string(r);
 
-            if (is_trapped(target)) break;
+            if (is_trapped(target))
+                break;
 
             if (p == nullptr || (p->is_white() == m_is_white && !(p->is_playable())))
             {
@@ -336,7 +338,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         }
         // --- DIAGONAL DETETECTION ---
         std::string diag_left_target = std::string(1, file - 1) + std::to_string(rank + dir);
-        if (!is_trapped(diag_left_target)) 
+        if (!is_trapped(diag_left_target))
         {
             const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
             if (diag_left != nullptr && diag_left->is_white() != m_is_white)
@@ -344,7 +346,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         }
 
         std::string diag_right_target = std::string(1, file + 1) + std::to_string(rank + dir);
-        if (!is_trapped(diag_right_target)) 
+        if (!is_trapped(diag_right_target))
         {
             const Piece* diag_right = get_piece_at(file + 1, rank + dir, board_pieces);
             if (diag_right != nullptr && diag_right->is_white() != m_is_white)
@@ -371,9 +373,10 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
                 std::string target = std::string(1, f) + std::to_string(r);
-                
+
                 // --- [BEGIN AI-GENERATED] CHESHIRE CAT TRAP ---
-                if (is_trapped(target)) continue;
+                if (is_trapped(target))
+                    continue;
                 // --- [END AI-GENERATED] ---
 
                 const Piece* p = get_piece_at(f, r, board_pieces);
@@ -424,9 +427,10 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
                 std::string target = std::string(1, f) + std::to_string(r);
-                
+
                 // --- [BEGIN AI-GENERATED] CHESHIRE CAT TRAP ---
-                if (is_trapped(target)) continue;
+                if (is_trapped(target))
+                    continue;
                 // --- [END AI-GENERATED] ---
 
                 const Piece* p = get_piece_at(f, r, board_pieces);

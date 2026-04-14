@@ -6,11 +6,32 @@ Quote get_quote(Event event)
 {
     switch (event)
     {
+    case Event::CHESHIRE_CAT:
+        return {
+            .source      = "Alice's Adventures in Wonderland, Chapter 6 (\"Pig and Pepper\")",
+            .text        = "\"A grin without a cat!\"",
+            .explanation = "The Cheshire Smile: Ghostly appearances block some tiles. The count of these rare events follows a Poisson distribution."
+        };
+
+    case Event::RED_QUEEN:
+        return {
+            .source      = "Through the Looking-Glass, Chapter 2 (\"The Garden of Live Flowers\")",
+            .text        = "\"Now, here, you see, it takes all the running you can do, to keep in the same place.\"",
+            .explanation = "The Red Queen's Race: A piece may stall in place. The number of attempts required before it can be selected follows a Geometric distribution."
+        };
+
     case Event::MAD_HATTER:
         return {
             .source      = "Alice's Adventures in Wonderland, Chapter 7 (\"A Mad Tea-Party\")",
             .text        = "\"I want a clean cup, let's all move one place on!\"",
             .explanation = "The Mad Hatter's Tea Party : The order of the major pieces is thrown into total chaos using a random permutation (Fisher-Yates)."
+        };
+
+    case Event::CARD_GARDENERS:
+        return {
+            .source      = "Alice's Adventures in Wonderland, Chapter 8 (\"The Queen's Croquet-Ground\")",
+            .text        = "\"Look out now, Five! Don't go splashing paint over me like that!\"",
+            .explanation = "The Card Gardeners: A magical brush strikes the board. The number of pieces affected by paint follows a Binomial distribution."
         };
 
     case Event::MAGIC_MUSHROOM:
@@ -25,27 +46,6 @@ Quote get_quote(Event event)
             .source      = "Alice's Adventures in Wonderland, Chapter 1 (\"Down the Rabbit-Hole\")",
             .text        = "\"Oh my ears and whiskers, how late it's getting!\"",
             .explanation = "The White Rabbit's Anxiety: Pieces jitter on their tiles. This visual noise is generated with a Normal (Gaussian) distribution."
-        };
-
-    case Event::RED_QUEEN:
-        return {
-            .source      = "Through the Looking-Glass, Chapter 2 (\"The Garden of Live Flowers\")",
-            .text        = "\"Now, here, you see, it takes all the running you can do, to keep in the same place.\"",
-            .explanation = "The Red Queen's Race: A piece may stall in place. The number of attempts required before it can be selected follows a Geometric distribution."
-        };
-
-    case Event::CHESHIRE_CAT:
-        return {
-            .source      = "Alice's Adventures in Wonderland, Chapter 6 (\"Pig and Pepper\")",
-            .text        = "\"A grin without a cat!\"",
-            .explanation = "The Cheshire Smile: Ghostly appearances block some tiles. The count of these rare events follows a Poisson distribution."
-        };
-
-    case Event::CARD_GARDENERS:
-        return {
-            .source      = "Alice's Adventures in Wonderland, Chapter 8 (\"The Queen's Croquet-Ground\")",
-            .text        = "\"Look out now, Five! Don't go splashing paint over me like that!\"",
-            .explanation = "The Card Gardeners: A magical brush strikes the board. The number of pieces affected by paint follows a Binomial distribution."
         };
 
     case Event::ENDLESS_FALL:
