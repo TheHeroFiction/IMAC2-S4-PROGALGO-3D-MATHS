@@ -1,4 +1,5 @@
 #include "chess_pieces.hpp"
+#include <algorithm>
 #include "wonderland_effects.hpp"
 
 // --- CONSTRUCTOR ---
