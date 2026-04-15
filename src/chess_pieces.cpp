@@ -248,7 +248,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
                         }
                     }
 
-                    if (((m_is_white && final_tile[1] == '8') || (!(m_is_white) && final_tile[1] == '1')) && m_behaviour == Behaviour::Pawn)
+                    if (!game_state.is_finished && ((m_is_white && final_tile[1] == '8') || (!(m_is_white) && final_tile[1] == '1')) && m_behaviour == Behaviour::Pawn)
                     {
                         to_be_promoted = true;
                     }

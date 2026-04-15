@@ -6,7 +6,7 @@
 
 std::vector<std::pair<std::string, Behaviour>> titles_for_promotions{{"Rook", Behaviour::Rook}, {"Knight", Behaviour::Knight}, {"Bishop", Behaviour::Bishop}, {"Queen", Behaviour::Queen}};
 
-void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, float TILE_SIZE, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, std::pair<std::string, PIECE_STATUS>& current_piece, int current_piece_id)
+void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, float TILE_SIZE, bool& to_be_promoted, std::vector<Piece>& pieces, const std::map<std::string, ImVec2>& TAB_POS, std::pair<std::string, PIECE_STATUS>& current_piece, int current_piece_id)
 {
     ImGui::SetCursorScreenPos(boardStartPos);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4{0.1f, 0.1f, 0.1f, 0.7f});
@@ -37,6 +37,7 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
         game_state.is_white_turn      = true;
         game_state.is_wonderland_mode = false;
         game_state.trigger_echo(WonderlandLore::Event::NONE);
+        to_be_promoted = false;
 
         pieces = pieces_gen(TILE_SIZE);
         assign_pos_pieces(pieces, TAB_POS);
@@ -67,6 +68,7 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
     std::string random_btn_label = (game_state.is_finished && game_state.is_wonderland_mode) ? "REPLAY RANDOM EVENTS GAMEMODE" : "RANDOM EVENTS GAMEMODE";
     if (ImGui::Button(random_btn_label.c_str(), buttonSize))
     {
+        to_be_promoted = false;
         start_wonderland_mode(game_state, pieces, TAB_POS, logger, TILE_SIZE);
         current_piece    = std::pair("", PIECE_STATUS::UNSELECTED);
         current_piece_id = 32;

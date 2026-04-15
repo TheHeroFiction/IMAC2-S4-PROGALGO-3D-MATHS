@@ -48,6 +48,11 @@ int main()
 
                     ImGui::BeginChild("PiecesLayer", ImVec2(TILE_SIZE * 8, TILE_SIZE * 8), false, ImGuiWindowFlags_NoBackground);
                     {
+                        if (game_state.is_finished)
+                        {
+                            to_be_promoted = false;
+                        }
+
                         promotion_screen(to_be_promoted, pieces);
 
                         draw_pieces(game_state, logger, to_be_promoted, pieces, TAB_POS, current_piece, current_piece_id);
@@ -56,7 +61,7 @@ int main()
 
                     if (game_state.in_menu || game_state.is_finished)
                     {
-                        game_menu(boardStartPos, game_state, logger, TILE_SIZE, pieces, TAB_POS, current_piece, current_piece_id);
+                        game_menu(boardStartPos, game_state, logger, TILE_SIZE, to_be_promoted, pieces, TAB_POS, current_piece, current_piece_id);
                     }
 
                     // --- Logs ---
