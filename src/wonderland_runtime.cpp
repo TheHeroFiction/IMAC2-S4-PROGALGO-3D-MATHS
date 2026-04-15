@@ -1,4 +1,5 @@
 #include "wonderland_runtime.hpp"
+#include <cfloat>
 #include "wonderland_effects.hpp"
 
 // --- [BEGIN AI-GENERATED] WONDERLAND RUNTIME HELPERS ---
@@ -49,10 +50,10 @@ void draw_wonderland_echo_window(const GameState& game_state)
 {
     if (game_state.is_wonderland_mode && game_state.current_echo != WonderlandLore::Event::NONE)
     {
-        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 320, 20), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 28.0f, 64.0f), ImGuiCond_FirstUseEver, ImVec2(1.0f, 0.0f));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(320.0f, 0.0f), ImVec2(420.0f, FLT_MAX));
 
-        ImGui::Begin("Echoes of Wonderland", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+        ImGui::Begin("Echoes of Wonderland", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.8f, 0.3f, 1.0f));
         ImGui::TextWrapped("%s", game_state.current_quote.source.c_str());

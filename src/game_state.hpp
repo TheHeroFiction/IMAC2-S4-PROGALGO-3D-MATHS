@@ -1,5 +1,6 @@
 #pragma once
 #include <imgui.h>
+#include <array>
 #include <string>
 #include "wonderland_lore.hpp"
 #include "wonderland_math.hpp"
@@ -14,24 +15,41 @@ struct GameState {
     WonderlandEngine alice_engine;
 
     // --- WONDERLAND STATE ---
-    WonderlandLore::Event current_weather = WonderlandLore::Event::NONE; 
-    WonderlandLore::Event current_echo    = WonderlandLore::Event::NONE; 
+    WonderlandLore::Event current_weather = WonderlandLore::Event::NONE;
+    WonderlandLore::Event current_echo    = WonderlandLore::Event::NONE;
     WonderlandLore::Quote current_quote;
 
     // --- [BEGIN AI-GENERATED] ENDLESS FALL VARIABLES ---
-    float turn_timer = 0.0f;
+    float turn_timer         = 0.0f;
     float current_time_limit = 15.0f;
 
     std::vector<std::string> trapped_tiles;
 
-    void reset_timer() {
+    // --- STATISTICS TRACKING ---
+    std::vector<float> exp_history;
+    std::vector<int>   poisson_history;
+    std::vector<int>   geometric_history;
+    std::vector<float> cauchy_history;
+    std::vector<int>   binomial_history;
+    std::vector<float> normal_history;
+    std::vector<float> beta_history;
+
+    // Buckets: 0=Beta, 1=Normal, 2=Binomial, 3=Poisson, 4=Clear(NONE)
+    std::array<int, 5> weather_distribution{};
+
+    void reset_timer()
+    {
         float raw_time = alice_engine.get_exponential(0.066f);
+
+        exp_history.push_back(raw_time);
+
         current_time_limit = std::max(5.0f, std::min(30.0f, raw_time));
-        turn_timer = 0.0f;
+        turn_timer         = 0.0f;
     }
     // --- [END AI-GENERATED] ---
 
-    void trigger_echo(WonderlandLore::Event event) {
+    void trigger_echo(WonderlandLore::Event event)
+    {
         current_echo  = event;
         current_quote = WonderlandLore::get_quote(event);
     }
@@ -41,28 +59,53 @@ struct GameState {
     {
         is_white_turn = !is_white_turn;
 
-        if (is_wonderland_mode) 
+        if (is_wonderland_mode)
         {
-            float roll = alice_engine.get_uniform(); 
+            float                 roll        = alice_engine.get_uniform();
             WonderlandLore::Event new_weather = WonderlandLore::Event::NONE;
 
-            if (roll < 0.20f) {
+            if (roll < 0.20f)
+            {
                 new_weather = WonderlandLore::Event::MAGIC_MUSHROOM;
-            } 
-            else if (roll < 0.40f) {
+            }
+            else if (roll < 0.40f)
+            {
                 new_weather = WonderlandLore::Event::WHITE_RABBIT;
             }
-            else if (roll < 0.60f) {
+            else if (roll < 0.60f)
+            {
                 new_weather = WonderlandLore::Event::CARD_GARDENERS;
             }
-            else if (roll < 0.80f) {
+            else if (roll < 0.80f)
+            {
                 new_weather = WonderlandLore::Event::CHESHIRE_CAT;
             }
-            
+
+            if (roll < 0.20f)
+            {
+                weather_distribution[0]++;
+            }
+            else if (roll < 0.40f)
+            {
+                weather_distribution[1]++;
+            }
+            else if (roll < 0.60f)
+            {
+                weather_distribution[2]++;
+            }
+            else if (roll < 0.80f)
+            {
+                weather_distribution[3]++;
+            }
+            else
+            {
+                weather_distribution[4]++;
+            }
+
             current_weather = new_weather;
-            trigger_echo(new_weather); 
-            
-            reset_timer(); 
+            trigger_echo(new_weather);
+
+            reset_timer();
         }
     }
 
@@ -113,13 +156,13 @@ struct GameState {
         }
 
         // --- [BEGIN AI-GENERATED] TIMER UI ---
-        if (is_wonderland_mode && !is_finished) 
+        if (is_wonderland_mode && !is_finished)
         {
             ImGui::SameLine();
             float time_left = std::max(0.0f, current_time_limit - turn_timer);
-            
+
             ImVec4 timer_color = (time_left <= 5.0f) ? ImVec4(1.0f, 0.2f, 0.2f, 1.0f) : ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
-            
+
             ImGui::TextColored(timer_color, " | Time left: %.1fs", time_left);
         }
         // --- [END AI-GENERATED] ---

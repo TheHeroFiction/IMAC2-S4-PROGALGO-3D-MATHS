@@ -5,6 +5,7 @@
 #include "quick_imgui/quick_imgui.hpp"
 #include "utils.hpp"
 #include "wonderland_runtime.hpp"
+#include "wonderland_stats.hpp"
 
 const float TILE_SIZE = 70.f;
 
@@ -30,6 +31,7 @@ int main()
                 [&]() {
                     // ImGui::ShowDemoWindow();
 
+                    ImGui::SetNextWindowPos(ImVec2(20.0f, 64.0f), ImGuiCond_FirstUseEver);
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                     // --- HEADER ---
@@ -73,6 +75,10 @@ int main()
 
                     // --- WINDOW: ECHOES OF WONDERLAND ---
                     draw_wonderland_echo_window(game_state);
+
+                    // --- [BEGIN AI-GENERATED] WINDOW: STATISTICS ---
+                    draw_wonderland_stats_window(game_state);
+                    // --- [END AI-GENERATED] ---
 
                     ImGui::End();
                 },

@@ -24,15 +24,15 @@ enum class PIECE_STATUS {
 class Piece {
 private:
     std::string  m_name;
-    bool         m_is_white;
-    bool         m_is_playable;
+    bool         m_is_white    = false;
+    bool         m_is_playable = false;
     std::string  m_current_tile;
-    ImVec2       m_position;
-    float        m_tile_size;
-    Behaviour    m_behaviour;
-    unsigned int m_texture_id;
-    float        m_magic_scale = 1.0f;
-    int          m_stubbornness = 0;
+    ImVec2       m_position       = ImVec2(0.0f, 0.0f);
+    float        m_tile_size      = 0.0f;
+    Behaviour    m_behaviour      = Behaviour::Pawn;
+    unsigned int m_texture_id     = 0;
+    float        m_magic_scale    = 1.0f;
+    int          m_stubbornness   = 0;
     bool         m_is_painted_red = false;
 
 public:

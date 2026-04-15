@@ -122,7 +122,11 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
         // --- WHITE RABBIT (NORMAL LAW) ---
         if (game_state.current_weather == WonderlandLore::Event::WHITE_RABBIT)
         {
-            render_offset.x = game_state.alice_engine.get_normal(0.0f, 2.5f);
+            float raw_offset = game_state.alice_engine.get_normal(0.0f, 2.5f);
+
+            game_state.normal_history.push_back(raw_offset);
+
+            render_offset.x = raw_offset;
             render_offset.y = game_state.alice_engine.get_normal(0.0f, 2.5f);
         }
     }
@@ -143,7 +147,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
     if (ImGui::ImageButton(
             m_name.c_str(),
-            (void*)(intptr_t)m_texture_id,
+            reinterpret_cast<void*>(static_cast<intptr_t>(m_texture_id)),
             ImVec2(current_tile_size, current_tile_size),
             ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(0, 0, 0, 0),
@@ -166,6 +170,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
             {
                 clicked        = true;
                 m_stubbornness = game_state.alice_engine.get_geometric(0.4f);
+                game_state.geometric_history.push_back(m_stubbornness);
             }
         }
         else
@@ -187,7 +192,7 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
         for (const std::string& tile_name : valid_tiles)
         {
-            if (tab_pos.find(tile_name) != tab_pos.end())
+            if (tab_pos.contains(tile_name))
             {
                 ImVec2 target_pos = tab_pos.at(tile_name);
 
@@ -204,6 +209,9 @@ bool Piece::show_piece(std::pair<std::string, PIECE_STATUS>& current_piece, Game
 
                     if (game_state.is_wonderland_mode)
                     {
+                        float raw_dx = game_state.alice_engine.get_cauchy(0.0f, 0.15f);
+                        game_state.cauchy_history.push_back(raw_dx);
+
                         int dx = static_cast<int>(std::round(game_state.alice_engine.get_cauchy(0.0f, 0.15f)));
                         int dy = static_cast<int>(std::round(game_state.alice_engine.get_cauchy(0.0f, 0.15f)));
 
@@ -294,7 +302,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
     auto add_sliding_moves = [&](int d_file, int d_rank) {
         for (int i = 1; i < 8; i++)
         {
-            char f = file + (d_file * i);
+            char f = static_cast<char>(file + (d_file * i));
             int  r = rank + (d_rank * i);
             if (f < 'a' || f > 'h' || r < 1 || r > 8)
                 break; // --- OUT OF CHESSBOARD BOUNDS ---
@@ -338,18 +346,20 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
             }
         }
         // --- DIAGONAL DETETECTION ---
-        std::string diag_left_target = std::string(1, file - 1) + std::to_string(rank + dir);
+        char        diag_left_file   = static_cast<char>(file - 1);
+        std::string diag_left_target = std::string(1, diag_left_file) + std::to_string(rank + dir);
         if (!is_trapped(diag_left_target))
         {
-            const Piece* diag_left = get_piece_at(file - 1, rank + dir, board_pieces);
+            const Piece* diag_left = get_piece_at(diag_left_file, rank + dir, board_pieces);
             if (diag_left != nullptr && diag_left->is_white() != m_is_white)
                 possible_moves.push_back(diag_left_target);
         }
 
-        std::string diag_right_target = std::string(1, file + 1) + std::to_string(rank + dir);
+        char        diag_right_file   = static_cast<char>(file + 1);
+        std::string diag_right_target = std::string(1, diag_right_file) + std::to_string(rank + dir);
         if (!is_trapped(diag_right_target))
         {
-            const Piece* diag_right = get_piece_at(file + 1, rank + dir, board_pieces);
+            const Piece* diag_right = get_piece_at(diag_right_file, rank + dir, board_pieces);
             if (diag_right != nullptr && diag_right->is_white() != m_is_white)
                 possible_moves.push_back(diag_right_target);
         }
@@ -369,7 +379,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         };
         for (auto& m : moves)
         {
-            char f = file + m[0];
+            char f = static_cast<char>(file + m[0]);
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
@@ -423,7 +433,7 @@ std::vector<std::string> Piece::get_possible_moves(const std::vector<Piece>& boa
         };
         for (auto& m : moves)
         {
-            char f = file + m[0];
+            char f = static_cast<char>(file + m[0]);
             int  r = rank + m[1];
             if (f >= 'a' && f <= 'h' && r >= 1 && r <= 8)
             {
