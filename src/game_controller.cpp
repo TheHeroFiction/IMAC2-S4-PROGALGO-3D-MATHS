@@ -91,6 +91,7 @@ void start_wonderland_mode(GameState& game_state, std::vector<Piece>& pieces, co
     game_state.current_echo       = WonderlandLore::Event::NONE;
     game_state.current_quote      = {};
     game_state.trapped_tiles.clear();
+    game_state.reset_wonderland_stats();
     game_state.reset_timer();
 
     pieces = pieces_gen(tile_size);

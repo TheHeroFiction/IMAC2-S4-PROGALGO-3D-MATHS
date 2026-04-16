@@ -2,6 +2,7 @@
 #include <vector>
 #include "chessboard.hpp"
 #include "game_controller.hpp"
+#include "game_ui.hpp"
 #include "quick_imgui/quick_imgui.hpp"
 #include "utils.hpp"
 #include "wonderland_runtime.hpp"
@@ -35,7 +36,7 @@ int main()
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
                     // --- HEADER ---
-                    game_state.game_header();
+                    draw_game_header(game_state);
 
                     // --- CHESSBOARD & PIECES ---
                     ImVec2 boardStartPos = ImGui::GetCursorScreenPos();

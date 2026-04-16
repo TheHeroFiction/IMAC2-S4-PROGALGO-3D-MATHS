@@ -3,9 +3,46 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <numeric>
 
 namespace {
+
+enum class AutoStatsTab : std::uint8_t {
+    NONE,
+    EXPONENTIAL,
+    BETA,
+    NORMAL,
+    BINOMIAL,
+    POISSON,
+    UNIFORM,
+};
+
+AutoStatsTab tab_from_game_state(const GameState& game_state)
+{
+    if (game_state.current_echo == WonderlandLore::Event::ENDLESS_FALL)
+    {
+        return AutoStatsTab::EXPONENTIAL;
+    }
+    if (game_state.current_weather == WonderlandLore::Event::MAGIC_MUSHROOM)
+    {
+        return AutoStatsTab::BETA;
+    }
+    if (game_state.current_weather == WonderlandLore::Event::WHITE_RABBIT)
+    {
+        return AutoStatsTab::NORMAL;
+    }
+    if (game_state.current_weather == WonderlandLore::Event::CARD_GARDENERS)
+    {
+        return AutoStatsTab::BINOMIAL;
+    }
+    if (game_state.current_weather == WonderlandLore::Event::CHESHIRE_CAT)
+    {
+        return AutoStatsTab::POISSON;
+    }
+
+    return AutoStatsTab::UNIFORM;
+}
 
 template<typename T>
 float mean_of(const std::vector<T>& values)
@@ -401,7 +438,24 @@ void draw_wonderland_stats_window(const GameState& game_state)
 
         if (ImGui::BeginTabBar("WeatherTabs", ImGuiTabBarFlags_None))
         {
-            // --- PRIORITY SYSTEM TO PREVENT TAB FLICKERING ---
+            // Auto-select only when the weather/echo changes.
+            static WonderlandLore::Event s_last_weather     = WonderlandLore::Event::NONE;
+            static WonderlandLore::Event s_last_echo        = WonderlandLore::Event::NONE;
+            static bool                  s_first_open       = true;
+            static AutoStatsTab          s_pending_auto_tab = AutoStatsTab::NONE;
+
+            bool has_state_change = s_first_open
+                                    || (game_state.current_weather != s_last_weather)
+                                    || (game_state.current_echo != s_last_echo);
+
+            if (has_state_change)
+            {
+                s_pending_auto_tab = tab_from_game_state(game_state);
+                s_last_weather     = game_state.current_weather;
+                s_last_echo        = game_state.current_echo;
+                s_first_open       = false;
+            }
+
             ImGuiTabItemFlags exp_flag = 0;
             ImGuiTabItemFlags bet_flag = 0;
             ImGuiTabItemFlags nor_flag = 0;
@@ -409,28 +463,27 @@ void draw_wonderland_stats_window(const GameState& game_state)
             ImGuiTabItemFlags poi_flag = 0;
             ImGuiTabItemFlags uni_flag = 0;
 
-            // --- ENDLESS FALL HAS MAXIMUM PRIORITY OVER REGULAR WEATHER ---
-            if (game_state.current_echo == WonderlandLore::Event::ENDLESS_FALL)
+            if (s_pending_auto_tab == AutoStatsTab::EXPONENTIAL)
             {
                 exp_flag = ImGuiTabItemFlags_SetSelected;
             }
-            else if (game_state.current_weather == WonderlandLore::Event::MAGIC_MUSHROOM)
+            else if (s_pending_auto_tab == AutoStatsTab::BETA)
             {
                 bet_flag = ImGuiTabItemFlags_SetSelected;
             }
-            else if (game_state.current_weather == WonderlandLore::Event::WHITE_RABBIT)
+            else if (s_pending_auto_tab == AutoStatsTab::NORMAL)
             {
                 nor_flag = ImGuiTabItemFlags_SetSelected;
             }
-            else if (game_state.current_weather == WonderlandLore::Event::CARD_GARDENERS)
+            else if (s_pending_auto_tab == AutoStatsTab::BINOMIAL)
             {
                 bin_flag = ImGuiTabItemFlags_SetSelected;
             }
-            else if (game_state.current_weather == WonderlandLore::Event::CHESHIRE_CAT)
+            else if (s_pending_auto_tab == AutoStatsTab::POISSON)
             {
                 poi_flag = ImGuiTabItemFlags_SetSelected;
             }
-            else if (game_state.current_weather == WonderlandLore::Event::NONE)
+            else if (s_pending_auto_tab == AutoStatsTab::UNIFORM)
             {
                 uni_flag = ImGuiTabItemFlags_SetSelected;
             }
@@ -464,6 +517,8 @@ void draw_wonderland_stats_window(const GameState& game_state)
             // --- UNIFORM (WEATHER ENGINE) ---
             // ---------------------------------------------------------
             draw_uniform_tab(game_state, uni_flag);
+
+            s_pending_auto_tab = AutoStatsTab::NONE;
 
             ImGui::EndTabBar();
         }
