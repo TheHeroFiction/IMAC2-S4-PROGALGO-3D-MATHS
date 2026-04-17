@@ -54,7 +54,7 @@ int main(int /*argc*/, char** argv)
     // creation d'un vbo
     GLuint vbo;
 
-    // vertex data
+    // vertex data for single cube
     float vertices[] = {
         // Back face
         -0.5f,
@@ -194,10 +194,7 @@ int main(int /*argc*/, char** argv)
         rand_pos.push_back(rand() % 200 + 100);
     }
 
-    glimac::FilePath applicationPath(argv[0]);
-    // std::unique_ptr<EarthProgram>   earthProgram;
-    // std::unique_ptr<MoonProgram>    moonProgram;
-    // std::unique_ptr<glimac::Sphere> sphere;
+    glimac::FilePath                   applicationPath(argv[0]);
     std::unique_ptr<BypassBaseProgram> program;
     std::unique_ptr<BypassBaseProgram> program_pieces;
 
@@ -293,7 +290,7 @@ int main(int /*argc*/, char** argv)
                             {
                                 continue;
                             }else {
-                              model = glm::scale(glm::translate(MVMatrix,glm::vec3( col*0.5 -1.5 ,row*0.5 -1.5,0.5)),glm::vec3(0.1,0.2,0.5));
+                              model = glm::scale(glm::translate(MVMatrix,glm::vec3( col*0.5 -1.5 ,row*0.5 -1.5,0.5)),glm::vec3(0.2,0.1,0.5));
                             // sending matrix to gpu
                             glUniformMatrix4fv(program_pieces->uMVMatrix, 1, GL_FALSE, glm::value_ptr(model));
                             glUniformMatrix4fv(
