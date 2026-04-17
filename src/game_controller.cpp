@@ -56,8 +56,8 @@ void game_menu(ImVec2 boardStartPos, GameState& game_state, GameLogger& logger, 
     // --- 3D GAMEMODE ---
     if (ImGui::Button("3D GAMEMODE", buttonSize))
     {
-        // logger.AddLog("3D GAMEMODE AVAILABLE SOON!");
-        main_3D_window(TILE_SIZE * 8);
+        logger.AddLog("3D GAMEMODE AVAILABLE SOON!");
+        // main_3D_window(TILE_SIZE * 8);
     }
 
     ImGui::SetCursorPosX(x_offset);

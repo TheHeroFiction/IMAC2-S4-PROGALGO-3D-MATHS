@@ -1,9 +1,8 @@
 #include "utils.hpp"
 #include <imgui.h>
 #include <iostream>
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "../lib/stb_image.h"
+
 
 std::map<std::string, ImVec2> generate_tab_position(float tile_size)
 {

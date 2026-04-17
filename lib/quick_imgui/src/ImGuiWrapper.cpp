@@ -37,8 +37,8 @@ GLFWwindow* create_window(const char* title)
 #endif
 
     // Create window with graphics context
-    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-    GLFWwindow* window = glfwCreateWindow(1280, 720, title, nullptr, nullptr);
+    // glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    GLFWwindow* window = glfwCreateWindow(900, 900, title, nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create a window\n";
