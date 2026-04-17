@@ -310,7 +310,7 @@ int main(int /*argc*/, char** argv)
                     glBindVertexArray(0);
 
                      //ImGui::ShowDemoWindow();
-                    /*
+                    
                     ImGui::SetNextWindowPos(ImVec2(20.0f, 64.0f), ImGuiCond_FirstUseEver);
                     ImGui::Begin("Chess Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -360,8 +360,7 @@ int main(int /*argc*/, char** argv)
                     draw_wonderland_stats_window(game_state);
                     // --- [END AI-GENERATED] ---
 
-                    ImGui::End();
-                    */ },
+                    ImGui::End(); },
             .key_callback = [&](int key, int /*scancode*/, int action, int /*mods*/) { 
                 if (key == 81 && action == GLFW_PRESS) 
                 {
